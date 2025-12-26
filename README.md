@@ -115,10 +115,10 @@ claude-switch provider update <name> [--auth-token <token>] [--base-url <url>]
 ### Model Management
 
 ```bash
-claude-switch model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>]
+claude-switch model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
 claude-switch model list [provider]
 claude-switch model remove <provider> <model>
-claude-switch model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>]
+claude-switch model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
 ```
 
 ## Configuration
@@ -144,7 +144,8 @@ Configuration is stored in `~/.config/claude/claude-switch/`:
           "description": "Xiaomi Mimo V2 Flash",
           "default_haiku_model": "mimo-v2-flash",
           "default_opus_model": "mimo-v2-flash",
-          "default_sonnet_model": "mimo-v2-flash"
+          "default_sonnet_model": "mimo-v2-flash",
+          "small_fast_model": "mimo-v2-flash"
         }
       ]
     },
@@ -172,6 +173,7 @@ When you run `claude-switch export`, the following environment variables are set
 - `ANTHROPIC_DEFAULT_HAIKU_MODEL` - Default Haiku model (optional)
 - `ANTHROPIC_DEFAULT_OPUS_MODEL` - Default Opus model (optional)
 - `ANTHROPIC_DEFAULT_SONNET_MODEL` - Default Sonnet model (optional)
+- `ANTHROPIC_SMALL_FAST_MODEL` - Small fast model (optional)
 
 ## Usage Examples
 
@@ -213,6 +215,7 @@ claude-switch model add MyProvider my-model
 # Enter default haiku model: (optional, press Enter to skip)
 # Enter default opus model: (optional, press Enter to skip)
 # Enter default sonnet model: (optional, press Enter to skip)
+# Enter small fast model: (optional, press Enter to skip)
 
 # Switch and use
 claude-switch switch MyProvider/my-model

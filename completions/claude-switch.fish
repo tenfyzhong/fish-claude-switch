@@ -79,6 +79,7 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-haiku -d "Default haiku model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-sonnet -d "Default sonnet model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l small-fast-model -d "Small fast model"
 
 # Model list
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from list' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name (optional)"
@@ -104,6 +105,7 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-haiku -d "Default haiku model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-sonnet -d "Default sonnet model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l small-fast-model -d "Small fast model"
 
 # Backward compatibility: -h/--help flags
 complete -c claude-switch -s h -l help -d "Show help message"

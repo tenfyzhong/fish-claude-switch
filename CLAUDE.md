@@ -55,7 +55,8 @@ This is a Fish shell plugin (`fish-claude-switch`) that enables switching betwee
             "description": "...",
             "default_haiku_model": "...",
             "default_opus_model": "...",
-            "default_sonnet_model": "..."
+            "default_sonnet_model": "...",
+            "small_fast_model": "..."
           }
         ]
       }
@@ -79,10 +80,13 @@ When `claude-switch export` is called (or via `claude` wrapper):
 - `ANTHROPIC_DEFAULT_HAIKU_MODEL` - Optional, from model
 - `ANTHROPIC_DEFAULT_OPUS_MODEL` - Optional, from model
 - `ANTHROPIC_DEFAULT_SONNET_MODEL` - Optional, from model
+- `ANTHROPIC_SMALL_FAST_MODEL` - Optional, from model
 
 ## Development Commands
 
 ### Running Tests
+
+Testing framework: [fishtape](https://github.com/jorgebucaran/fishtape)
 
 ```bash
 # Run all tests

@@ -33,7 +33,8 @@ function _test_create_mock_config
           "description": "Test Model Description",
           "default_haiku_model": "test-haiku",
           "default_opus_model": "test-opus",
-          "default_sonnet_model": "test-sonnet"
+          "default_sonnet_model": "test-sonnet",
+          "small_fast_model": "test-small-fast"
         },
         {
           "model": "test-model-v2",
@@ -50,7 +51,8 @@ function _test_create_mock_config
           "description": "Xiaomi Mimo V2 Flash",
           "default_haiku_model": "mimo-v2-flash",
           "default_opus_model": "mimo-v2-flash",
-          "default_sonnet_model": "mimo-v2-flash"
+          "default_sonnet_model": "mimo-v2-flash",
+          "small_fast_model": "mimo-v2-flash"
         }
       ]
     }
@@ -85,12 +87,12 @@ Provider Management:
                         Update provider settings (partial update)
 
 Model Management:
-  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>]
+  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Add a new model (interactive if description omitted)
   model list [provider]  List models (all or for specific provider)
   model remove <provider> <model>
                         Remove a model (prompts if currently active)
-  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>]
+  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Update model settings (partial update)
 
 Examples:
@@ -113,7 +115,8 @@ Environment Variables Set (using set -gx):
   ANTHROPIC_MODEL (from model)
   ANTHROPIC_DEFAULT_HAIKU_MODEL (optional)
   ANTHROPIC_DEFAULT_OPUS_MODEL (optional)
-  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)"
+  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)
+  ANTHROPIC_SMALL_FAST_MODEL (optional)"
 
 @test "claude-switch -h shows help" (_test_setup_env; claude-switch -h 2>&1 | string collect; _test_cleanup_env) = "claude-switch: Switch between different Claude code provider APIs
 Usage: claude-switch [subcommand] [options]
@@ -135,12 +138,12 @@ Provider Management:
                         Update provider settings (partial update)
 
 Model Management:
-  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>]
+  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Add a new model (interactive if description omitted)
   model list [provider]  List models (all or for specific provider)
   model remove <provider> <model>
                         Remove a model (prompts if currently active)
-  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>]
+  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Update model settings (partial update)
 
 Examples:
@@ -163,7 +166,8 @@ Environment Variables Set (using set -gx):
   ANTHROPIC_MODEL (from model)
   ANTHROPIC_DEFAULT_HAIKU_MODEL (optional)
   ANTHROPIC_DEFAULT_OPUS_MODEL (optional)
-  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)"
+  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)
+  ANTHROPIC_SMALL_FAST_MODEL (optional)"
 
 # Show current tests
 @test "claude-switch shows current when no config" (_test_setup_env; _test_create_mock_config; claude-switch 2>&1 | string collect; _test_cleanup_env) = "Current Claude Configuration:
@@ -300,16 +304,25 @@ Available models in 'TestProvider':
 
 @test "claude-switch model list filters by provider" (_test_setup_env; _test_create_mock_config; claude-switch model list TestProvider 2>&1 | grep -c "test-model"; _test_cleanup_env) = "2"
 
-@test "claude-switch model add adds model with args" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model --description "New Model" --default-haiku "" --default-opus "" --default-sonnet "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "New Model"
+@test "claude-switch model add adds model with args" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model --description "New Model" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "New Model"
 
-@test "claude-switch model add fails if model exists" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider test-model-v1 --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'test-model-v1' already exists in provider 'TestProvider'"
+@test "claude-switch model add fails if model exists" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider test-model-v1 --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'test-model-v1' already exists in provider 'TestProvider'"
 
-@test "claude-switch model add fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model add NonExistent model --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
+@test "claude-switch model add fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model add NonExistent model --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
 
 @test "claude-switch model remove removes model" (_test_setup_env; _test_create_mock_config; echo "y" | claude-switch model remove TestProvider test-model-v2 >/dev/null 2>&1; test (jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v2") | .model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null | wc -l) -eq 0 && echo "removed" || echo "not removed"; _test_cleanup_env) = "removed"
 
 @test "claude-switch model remove fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model remove TestProvider non-existent 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
 
-@test "claude-switch model update updates model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated Description" --default-haiku "test-haiku" --default-opus "test-opus" --default-sonnet "test-sonnet" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "Updated Description"
+@test "claude-switch model update updates model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated Description" --default-haiku "test-haiku" --default-opus "test-opus" --default-sonnet "test-sonnet" --small-fast-model "test-small-fast" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "Updated Description"
 
-@test "claude-switch model update fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider non-existent --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
+@test "claude-switch model update fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider non-existent --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
+
+# Small fast model tests
+@test "claude-switch model add adds model with small_fast_model" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model-small --description "New Model" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "small-model" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model-small") | .small_fast_model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "small-model"
+
+@test "claude-switch model update updates small_fast_model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "updated-small-fast" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .small_fast_model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "updated-small-fast"
+
+@test "claude-switch export exports ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_SMALL_FAST_MODEL"; _test_cleanup_env) = "test-small-fast"
+
+@test "claude-switch unexport clears ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; set -q ANTHROPIC_SMALL_FAST_MODEL && echo "set" || echo "unset"; _test_cleanup_env) = "unset"
