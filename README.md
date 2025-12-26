@@ -1,0 +1,1 @@
+# fish-claude-switch
