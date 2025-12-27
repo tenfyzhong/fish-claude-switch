@@ -1,9 +1,9 @@
 function claude-switch --description 'Switch between different Claude code provider APIs'
-    # Support -h/--help flag for backward compatibility
+    # Support -h/--help flag for backward compatibility (main command)
     if test (count $argv) -gt 0
         if test "$argv[1]" = "-h"; or test "$argv[1]" = "--help"
-        _claude-switch_help
-        return 0
+            _claude-switch_help
+            return 0
         end
     end
 
@@ -38,10 +38,24 @@ function claude-switch --description 'Switch between different Claude code provi
     # Route to subcommands
     switch "$subcommand"
         case edit
-        _claude-switch_edit_config "$models_file"
-        return $status
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_edit
+                    return 0
+                end
+            end
+            _claude-switch_edit_config "$models_file"
+            return $status
 
         case switch
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_switch
+                    return 0
+                end
+            end
             if test (count $argv) -lt 2
                 echo "Error: 'switch' requires a provider/model argument" >&2
                 echo "Usage: claude-switch switch <provider/model>" >&2
@@ -61,29 +75,70 @@ function claude-switch --description 'Switch between different Claude code provi
             return $status
 
         case clear
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_clear
+                    return 0
+                end
+            end
             _claude-switch_clear "$current_file"
             return $status
 
         case export
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_export
+                    return 0
+                end
+            end
             _claude-switch_export_env "$current_file" "$models_file"
             return $status
 
         case unexport
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_unexport
+                    return 0
+                end
+            end
             _claude-switch_unexport_env
             return $status
 
-        case help
-            _claude-switch_help
-            return 0
-
         case provider
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_provider
+                    return 0
+                end
+            end
             if test (count $argv) -lt 2
-                echo "Error: 'provider' requires a subcommand (add, list, remove, update)" >&2
+                echo "Error: 'provider' requires a subcommand (add, list, remove, update, disable, enable)" >&2
+                echo "Use 'claude-switch provider --help' for more information" >&2
                 return 1
             end
             set -l provider_cmd "$argv[2]"
             switch "$provider_cmd"
                 case add
+                    # Check for help flag
+                    if test (count $argv) -ge 3
+                        if test "$argv[3]" = "-h"; or test "$argv[3]" = "--help"
+                            _claude-switch_help_provider
+                            return 0
+                        end
+                    end
+                    # Check for help flag in arguments
+                    set -l i 4
+                    while test $i -le (count $argv)
+                        if test "$argv[$i]" = "-h"; or test "$argv[$i]" = "--help"
+                            _claude-switch_help_provider
+                            return 0
+                        end
+                        set i (math $i + 1)
+                    end
                     if test (count $argv) -lt 3
                         echo "Error: 'provider add' requires a provider name" >&2
                         echo "Usage: claude-switch provider add <name> [--auth-token <token>] [--base-url <url>]" >&2
@@ -136,6 +191,22 @@ function claude-switch --description 'Switch between different Claude code provi
                     return $status
 
                 case update
+                    # Check for help flag
+                    if test (count $argv) -ge 3
+                        if test "$argv[3]" = "-h"; or test "$argv[3]" = "--help"
+                            _claude-switch_help_provider
+                            return 0
+                        end
+                    end
+                    # Check for help flag in arguments
+                    set -l i 4
+                    while test $i -le (count $argv)
+                        if test "$argv[$i]" = "-h"; or test "$argv[$i]" = "--help"
+                            _claude-switch_help_provider
+                            return 0
+                        end
+                        set i (math $i + 1)
+                    end
                     if test (count $argv) -lt 3
                         echo "Error: 'provider update' requires a provider name" >&2
                         echo "Usage: claude-switch provider update <name> [--auth-token <token>] [--base-url <url>]" >&2
@@ -191,13 +262,34 @@ function claude-switch --description 'Switch between different Claude code provi
             end
 
         case model
+            # Check for help flag
+            if test (count $argv) -ge 2
+                if test "$argv[2]" = "-h"; or test "$argv[2]" = "--help"
+                    _claude-switch_help_model
+                    return 0
+                end
+            end
             if test (count $argv) -lt 2
-                echo "Error: 'model' requires a subcommand (add, list, remove, update)" >&2
+                echo "Error: 'model' requires a subcommand (add, list, remove, update, disable, enable)" >&2
+                echo "Use 'claude-switch model --help' for more information" >&2
                 return 1
             end
             set -l model_cmd "$argv[2]"
             switch "$model_cmd"
                 case add
+                    # Check for help flag
+                    if test (count $argv) -ge 3
+                        if test "$argv[3]" = "-h"; or test "$argv[3]" = "--help"
+                            _claude-switch_help_model
+                            return 0
+                        end
+                    end
+                    if test (count $argv) -ge 4
+                        if test "$argv[4]" = "-h"; or test "$argv[4]" = "--help"
+                            _claude-switch_help_model
+                            return 0
+                        end
+                    end
                     if test (count $argv) -lt 4
                         echo "Error: 'model add' requires provider and model name" >&2
                         echo "Usage: claude-switch model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]" >&2
@@ -218,6 +310,10 @@ function claude-switch --description 'Switch between different Claude code provi
                     # Parse flags
                     set -l i 5
                     while test $i -le (count $argv)
+                        if test "$argv[$i]" = "-h"; or test "$argv[$i]" = "--help"
+                            _claude-switch_help_model
+                            return 0
+                        end
                         switch "$argv[$i]"
                             case --description
                                 set i (math $i + 1)
@@ -282,6 +378,19 @@ function claude-switch --description 'Switch between different Claude code provi
                     return $status
 
                 case update
+                    # Check for help flag
+                    if test (count $argv) -ge 3
+                        if test "$argv[3]" = "-h"; or test "$argv[3]" = "--help"
+                            _claude-switch_help_model
+                            return 0
+                        end
+                    end
+                    if test (count $argv) -ge 4
+                        if test "$argv[4]" = "-h"; or test "$argv[4]" = "--help"
+                            _claude-switch_help_model
+                            return 0
+                        end
+                    end
                     if test (count $argv) -lt 4
                         echo "Error: 'model update' requires provider and model name" >&2
                         echo "Usage: claude-switch model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]" >&2
@@ -302,6 +411,10 @@ function claude-switch --description 'Switch between different Claude code provi
                     # Parse flags
                     set -l i 5
                     while test $i -le (count $argv)
+                        if test "$argv[$i]" = "-h"; or test "$argv[$i]" = "--help"
+                            _claude-switch_help_model
+                            return 0
+                        end
                         switch "$argv[$i]"
                             case --description
                                 set i (math $i + 1)
@@ -1411,56 +1524,233 @@ Main Subcommands:
   clear                   Clear current model configuration
   export                  Export environment variables from current model
   unexport                Unload all ANTHROPIC environment variables
-  help                    Show this help message
 
 Provider Management:
-  provider add <name> [--auth-token <token>] [--base-url <url>]
-                        Add a new provider (interactive if options omitted)
-  provider list [--all]  List all providers (use --all to show disabled)
-  provider remove <name> Remove a provider (prompts if has models)
-  provider update <name> [--auth-token <token>] [--base-url <url>]
-                        Update provider settings (partial update)
-  provider disable <name> Disable a provider
-  provider enable <name>  Enable a disabled provider
+  provider add            Add a new provider
+  provider list           List all providers
+  provider remove         Remove a provider
+  provider update         Update provider settings
+  provider disable        Disable a provider
+  provider enable         Enable a disabled provider
 
 Model Management:
-  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-                        Add a new model (interactive if description omitted)
-  model list [provider] [--all]
-                        List models (use --all to show disabled)
-  model remove <provider> <model>
-                        Remove a model (prompts if currently active)
-  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-                        Update model settings (partial update)
-  model disable <provider> <model>
-                        Disable a model
-  model enable <provider> <model>
-                        Enable a disabled model
+  model add               Add a new model
+  model list              List models
+  model remove            Remove a model
+  model update            Update model settings
+  model disable           Disable a model
+  model enable            Enable a disabled model
+
+For detailed help on a specific subcommand, use:
+  claude-switch <subcommand> --help
 
 Examples:
-  claude-switch                          Show current configuration
-  claude-switch model list               List all models
-  claude-switch model list --all         List all models including disabled
-  claude-switch switch Xiaomi/mimo-v2-flash  Switch to a model
-  claude-switch export                   Export environment variables
+  claude-switch switch --help      Show detailed help for switch command
+  claude-switch provider --help    Show detailed help for provider commands
+  claude-switch model --help       Show detailed help for model commands
+'
+end
+
+function _claude-switch_help_switch
+    printf 'claude-switch switch: Switch to a model
+
+Usage: claude-switch switch <provider/model>
+
+Description:
+  Switch to a specific model from a provider. The model must be specified
+  in the format "provider/model" (e.g., "Xiaomi/mimo-v2-flash").
+
+Arguments:
+  <provider/model>        Provider name and model name separated by "/"
+
+Examples:
+  claude-switch switch Xiaomi/mimo-v2-flash
+  claude-switch switch MyProvider/my-model
+
+After switching, run "claude-switch export" to load environment variables,
+or use the "claude" wrapper command which automatically exports them.
+
+Note:
+  - The provider and model must exist in the configuration
+  - Disabled providers or models cannot be switched to
+  - Use "claude-switch model list" to see available models
+'
+end
+
+function _claude-switch_help_edit
+    printf 'claude-switch edit: Edit the configuration file
+
+Usage: claude-switch edit
+
+Description:
+  Opens the configuration file in your default editor ($EDITOR).
+  If $EDITOR is not set, it will try vim, vi, or nano in that order.
+
+Configuration File:
+  ~/.config/claude/claude-switch/models.json
+
+After editing, the JSON syntax will be validated. If invalid, you will
+need to fix it before using claude-switch commands.
+
+Note:
+  - Make sure the JSON is valid before saving
+  - The file structure must match the expected schema
+'
+end
+
+function _claude-switch_help_clear
+    printf 'claude-switch clear: Clear current model configuration
+
+Usage: claude-switch clear
+
+Description:
+  Clears the current model configuration and removes all ANTHROPIC
+  environment variables. This resets claude-switch to its default state.
+
+What it does:
+  - Removes the current.json file
+  - Unloads all ANTHROPIC_* environment variables
+
+After clearing, you can set a new model with:
+  claude-switch switch <provider/model>
+'
+end
+
+function _claude-switch_help_export
+    printf 'claude-switch export: Export environment variables from current model
+
+Usage: claude-switch export
+
+Description:
+  Exports environment variables based on the currently selected model.
+  These variables are set using "set -gx" and will be available in the
+  current shell session.
+
+Environment Variables Set:
+  ANTHROPIC_AUTH_TOKEN              Authentication token from provider
+  ANTHROPIC_BASE_URL                Base URL from provider
+  ANTHROPIC_MODEL                   Model name
+  ANTHROPIC_DEFAULT_HAIKU_MODEL      Optional: Default haiku model
+  ANTHROPIC_DEFAULT_OPUS_MODEL       Optional: Default opus model
+  ANTHROPIC_DEFAULT_SONNET_MODEL    Optional: Default sonnet model
+  ANTHROPIC_SMALL_FAST_MODEL         Optional: Small fast model
+
+Note:
+  - Requires a current model to be set (via "claude-switch switch")
+  - The "claude" wrapper command automatically calls export before running
+  - Use "claude-switch unexport" to remove these variables
+'
+end
+
+function _claude-switch_help_unexport
+    printf 'claude-switch unexport: Unload all ANTHROPIC environment variables
+
+Usage: claude-switch unexport
+
+Description:
+  Removes all ANTHROPIC_* environment variables from the current shell session.
+  This does not affect the current model configuration (current.json).
+
+Environment Variables Removed:
+  ANTHROPIC_AUTH_TOKEN
+  ANTHROPIC_BASE_URL
+  ANTHROPIC_MODEL
+  ANTHROPIC_DEFAULT_HAIKU_MODEL
+  ANTHROPIC_DEFAULT_OPUS_MODEL
+  ANTHROPIC_DEFAULT_SONNET_MODEL
+  ANTHROPIC_SMALL_FAST_MODEL
+
+Note:
+  - This only affects the current shell session
+  - The current model configuration remains unchanged
+  - Use "claude-switch export" to reload variables
+'
+end
+
+function _claude-switch_help_provider
+    printf 'claude-switch provider: Manage Claude API providers
+
+Usage: claude-switch provider <subcommand> [options]
+
+Subcommands:
+  add <name> [--auth-token <token>] [--base-url <url>]
+    Add a new provider. If auth-token or base-url are omitted, you will
+    be prompted interactively.
+
+  list [--all]
+    List all providers. Use --all to include disabled providers.
+
+  remove <name>
+    Remove a provider. If the provider has models, you will be prompted
+    for confirmation.
+
+  update <name> [--auth-token <token>] [--base-url <url>]
+    Update provider settings. Only provided fields will be updated.
+    Omitted fields keep their current values.
+
+  disable <name>
+    Disable a provider. Disabled providers are hidden from normal listings
+    and cannot be switched to.
+
+  enable <name>
+    Enable a previously disabled provider.
+
+Examples:
   claude-switch provider add MyProvider --auth-token token123 --base-url https://api.example.com
-  claude-switch model add MyProvider my-model --description "My Model"
-  claude-switch model list MyProvider    List models for a provider
-  claude-switch provider disable MyProvider  Disable a provider
-  claude-switch model disable MyProvider my-model  Disable a model
+  claude-switch provider list
+  claude-switch provider list --all
+  claude-switch provider update MyProvider --base-url https://new-url.com
+  claude-switch provider disable MyProvider
+  claude-switch provider enable MyProvider
+  claude-switch provider remove MyProvider
 
 Configuration:
-  Config file: ~/.config/claude/claude-switch/models.json
-  Current model: ~/.config/claude/claude-switch/current.json
-  Editor:      $EDITOR (or vim/vi/nano)
+  Providers are stored in ~/.config/claude/claude-switch/models.json
+'
+end
 
-Environment Variables Set (using set -gx):
-  ANTHROPIC_AUTH_TOKEN (from provider)
-  ANTHROPIC_BASE_URL (from provider)
-  ANTHROPIC_MODEL (from model)
-  ANTHROPIC_DEFAULT_HAIKU_MODEL (optional)
-  ANTHROPIC_DEFAULT_OPUS_MODEL (optional)
-  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)
-  ANTHROPIC_SMALL_FAST_MODEL (optional)
+function _claude-switch_help_model
+    printf 'claude-switch model: Manage Claude models
+
+Usage: claude-switch model <subcommand> [options]
+
+Subcommands:
+  add <provider> <model> [--description <desc>] [--default-haiku <model>]
+        [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+    Add a new model to a provider. If description or other optional fields
+    are omitted, you will be prompted interactively.
+
+  list [provider] [--all]
+    List models. If provider is specified, lists only that provider'\''s models.
+    Use --all to include disabled models.
+
+  remove <provider> <model>
+    Remove a model from a provider. If the model is currently active,
+    you will be prompted for confirmation.
+
+  update <provider> <model> [--description <desc>] [--default-haiku <model>]
+        [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+    Update model settings. Only provided fields will be updated.
+    Omitted fields keep their current values.
+
+  disable <provider> <model>
+    Disable a model. Disabled models are hidden from normal listings
+    and cannot be switched to.
+
+  enable <provider> <model>
+    Enable a previously disabled model.
+
+Examples:
+  claude-switch model add MyProvider my-model --description "My Model"
+  claude-switch model list
+  claude-switch model list MyProvider
+  claude-switch model list --all
+  claude-switch model update MyProvider my-model --description "Updated Description"
+  claude-switch model disable MyProvider my-model
+  claude-switch model enable MyProvider my-model
+  claude-switch model remove MyProvider my-model
+
+Configuration:
+  Models are stored in ~/.config/claude/claude-switch/models.json
 '
 end

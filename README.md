@@ -101,7 +101,8 @@ claude-switch switch <provider/model>  # Switch to a model
 claude-switch clear              # Clear current configuration
 claude-switch export             # Export environment variables
 claude-switch unexport           # Unload environment variables
-claude-switch help               # Show help message
+claude-switch -h                # Show help message (or --help)
+claude-switch <subcommand> --help # Show detailed help for a subcommand
 ```
 
 ### Provider Management
