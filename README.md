@@ -10,6 +10,7 @@ A Fish shell plugin for switching between different Claude code provider APIs. E
 - ✅ **Environment Management** - Automatic export/unexport of ANTHROPIC_* variables
 - ✅ **Seamless Integration** - Wrapper function for the `claude` command
 - ✅ **Safe Configuration** - JSON-based config with validation
+- ✅ **Disable/Enable** - Temporarily disable providers or models without removing them
 
 ## Installation
 
@@ -107,18 +108,22 @@ claude-switch help               # Show help message
 
 ```bash
 claude-switch provider add <name> [--auth-token <token>] [--base-url <url>]
-claude-switch provider list
+claude-switch provider list [--all]      # Use --all to show disabled providers
 claude-switch provider remove <name>
 claude-switch provider update <name> [--auth-token <token>] [--base-url <url>]
+claude-switch provider disable <name>     # Disable a provider
+claude-switch provider enable <name>      # Enable a disabled provider
 ```
 
 ### Model Management
 
 ```bash
 claude-switch model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-claude-switch model list [provider]
+claude-switch model list [provider] [--all]  # Use --all to show disabled models
 claude-switch model remove <provider> <model>
 claude-switch model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+claude-switch model disable <provider> <model>   # Disable a model
+claude-switch model enable <provider> <model>    # Enable a disabled model
 ```
 
 ## Configuration
@@ -138,6 +143,7 @@ Configuration is stored in `~/.config/claude/claude-switch/`:
     "Xiaomi": {
       "auth_token": "your-api-key",
       "base_url": "https://api.xiaomimimo.com/anthropic",
+      "disabled": false,
       "models": [
         {
           "model": "mimo-v2-flash",
@@ -145,17 +151,20 @@ Configuration is stored in `~/.config/claude/claude-switch/`:
           "default_haiku_model": "mimo-v2-flash",
           "default_opus_model": "mimo-v2-flash",
           "default_sonnet_model": "mimo-v2-flash",
-          "small_fast_model": "mimo-v2-flash"
+          "small_fast_model": "mimo-v2-flash",
+          "disabled": false
         }
       ]
     },
     "Official": {
       "auth_token": "sk-ant-api03-...",
       "base_url": "https://api.anthropic.com",
+      "disabled": false,
       "models": [
         {
           "model": "claude-3-5-sonnet-20241022",
-          "description": "Claude 3.5 Sonnet"
+          "description": "Claude 3.5 Sonnet",
+          "disabled": false
         }
       ]
     }
@@ -238,6 +247,33 @@ claude "explain quantum computing"
 # 3. Cleans up environment variables
 ```
 
+### Example 4: Disabling Providers and Models
+
+You can temporarily disable a provider or model without removing it from your configuration:
+
+```bash
+# Disable a provider (all its models will be hidden)
+claude-switch provider disable Xiaomi
+
+# Disable a specific model
+claude-switch model disable Xiaomi mimo-v2-flash
+
+# List all providers including disabled ones
+claude-switch provider list --all
+
+# List all models including disabled ones
+claude-switch model list --all
+
+# Re-enable when needed
+claude-switch provider enable Xiaomi
+claude-switch model enable Xiaomi mimo-v2-flash
+
+# Note: You cannot switch to a disabled provider or model
+claude-switch switch Xiaomi/mimo-v2-flash
+# Error: Provider 'Xiaomi' is disabled.
+# To enable, run: claude-switch provider enable Xiaomi
+```
+
 ## Testing
 
 Run the test suite:
@@ -275,6 +311,21 @@ Ensure the completion file is linked and reload Fish: `source ~/.config/fish/con
 ### Environment variables not set
 
 Run `claude-switch export` manually or use the `claude` wrapper function
+
+### "Provider is disabled" or "Model is disabled"
+
+If you see this error when trying to switch, the provider or model has been disabled. To re-enable:
+
+```bash
+# Check all providers including disabled ones
+claude-switch provider list --all
+
+# Enable the provider
+claude-switch provider enable <provider-name>
+
+# Or enable a specific model
+claude-switch model enable <provider-name> <model-name>
+```
 
 ## Contributing
 

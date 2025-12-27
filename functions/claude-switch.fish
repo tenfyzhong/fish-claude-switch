@@ -113,7 +113,16 @@ function claude-switch --description 'Switch between different Claude code provi
                     return $status
 
                 case list
-                    _claude-switch_provider_list "$models_file"
+                    set -l show_all 0
+                    # Parse flags
+                    set -l i 3
+                    while test $i -le (count $argv)
+                        if test "$argv[$i]" = "--all"
+                            set show_all 1
+                        end
+                        set i (math $i + 1)
+                    end
+                    _claude-switch_provider_list "$models_file" "$show_all"
                     return 0
 
                 case remove
@@ -155,9 +164,29 @@ function claude-switch --description 'Switch between different Claude code provi
                     _claude-switch_provider_update "$models_file" "$provider_name" "$auth_token" "$base_url"
                     return $status
 
+                case disable
+                    if test (count $argv) -lt 3
+                        echo "Error: 'provider disable' requires a provider name" >&2
+                        echo "Usage: claude-switch provider disable <name>" >&2
+                        return 1
+                    end
+                    set -l provider_name "$argv[3]"
+                    _claude-switch_provider_disable "$models_file" "$provider_name"
+                    return $status
+
+                case enable
+                    if test (count $argv) -lt 3
+                        echo "Error: 'provider enable' requires a provider name" >&2
+                        echo "Usage: claude-switch provider enable <name>" >&2
+                        return 1
+                    end
+                    set -l provider_name "$argv[3]"
+                    _claude-switch_provider_enable "$models_file" "$provider_name"
+                    return $status
+
                 case '*'
                     echo "Error: Unknown provider subcommand '$provider_cmd'" >&2
-                    echo "Available subcommands: add, list, remove, update" >&2
+                    echo "Available subcommands: add, list, remove, update, disable, enable" >&2
                     return 1
             end
 
@@ -228,10 +257,17 @@ function claude-switch --description 'Switch between different Claude code provi
 
                 case list
                     set -l provider_name ""
-                    if test (count $argv) -ge 3
-                        set provider_name "$argv[3]"
+                    set -l show_all 0
+                    set -l i 3
+                    while test $i -le (count $argv)
+                        if test "$argv[$i]" = "--all"
+                            set show_all 1
+                        else
+                            set provider_name "$argv[$i]"
+                        end
+                        set i (math $i + 1)
                     end
-                    _claude-switch_model_list "$models_file" "$provider_name"
+                    _claude-switch_model_list "$models_file" "$provider_name" "$show_all"
                     return 0
 
                 case remove
@@ -303,9 +339,31 @@ function claude-switch --description 'Switch between different Claude code provi
                     _claude-switch_model_update "$models_file" "$provider_name" "$model_name" "$description" "$default_haiku" "$default_opus" "$default_sonnet" "$small_fast_model" "$has_description" "$has_default_haiku" "$has_default_opus" "$has_default_sonnet" "$has_small_fast_model"
                     return $status
 
+                case disable
+                    if test (count $argv) -lt 4
+                        echo "Error: 'model disable' requires provider and model name" >&2
+                        echo "Usage: claude-switch model disable <provider> <model>" >&2
+                        return 1
+                    end
+                    set -l provider_name "$argv[3]"
+                    set -l model_name "$argv[4]"
+                    _claude-switch_model_disable "$models_file" "$provider_name" "$model_name"
+                    return $status
+
+                case enable
+                    if test (count $argv) -lt 4
+                        echo "Error: 'model enable' requires provider and model name" >&2
+                        echo "Usage: claude-switch model enable <provider> <model>" >&2
+                        return 1
+                    end
+                    set -l provider_name "$argv[3]"
+                    set -l model_name "$argv[4]"
+                    _claude-switch_model_enable "$models_file" "$provider_name" "$model_name"
+                    return $status
+
                 case '*'
                     echo "Error: Unknown model subcommand '$model_cmd'" >&2
-                    echo "Available subcommands: add, list, remove, update" >&2
+                    echo "Available subcommands: add, list, remove, update, disable, enable" >&2
                     return 1
             end
 
@@ -407,7 +465,7 @@ function _claude-switch_provider_add -a models_file provider_name auth_token bas
     end
 end
 
-function _claude-switch_provider_list -a models_file
+function _claude-switch_provider_list -a models_file show_all
     echo "Available Providers:"
     echo ""
 
@@ -417,14 +475,35 @@ function _claude-switch_provider_list -a models_file
         return 0
     end
 
+    set -l shown_count 0
     for provider in $providers
-        echo "Provider: $provider"
+        set -l disabled (jq -r ".providers.\"$provider\".disabled // false" "$models_file")
+
+        # Skip disabled providers unless show_all is true
+        if test "$disabled" = "true" -a "$show_all" != "1"
+            continue
+        end
+
+        set -l shown_count (math $shown_count + 1)
+        set -l status_mark ""
+        if test "$disabled" = "true"
+            set status_mark " [DISABLED]"
+        end
+        echo "Provider: $provider$status_mark"
         set -l auth_token (jq -r ".providers.\"$provider\".auth_token" "$models_file")
         set -l base_url (jq -r ".providers.\"$provider\".base_url" "$models_file")
         set -l model_count (jq -r ".providers.\"$provider\".models | length" "$models_file")
         echo "  Auth token: $auth_token"
         echo "  Base URL: $base_url"
         echo "  Models: $model_count"
+        echo ""
+    end
+
+    if test "$shown_count" -eq 0
+        echo "  No providers to display."
+        if test "$show_all" = "1"
+            echo "  (all providers are disabled)"
+        end
         echo ""
     end
 end
@@ -496,6 +575,60 @@ function _claude-switch_provider_update -a models_file provider_name auth_token 
         return 0
     else
         echo "Error: Failed to update provider" >&2
+        return 1
+    end
+end
+
+function _claude-switch_provider_disable -a models_file provider_name
+    # Check if provider exists
+    set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
+    if test "$exists" != "true"
+        echo "Error: Provider '$provider_name' not found" >&2
+        return 1
+    end
+
+    # Check if already disabled
+    set -l disabled (jq -r ".providers.\"$provider_name\".disabled // false" "$models_file")
+    if test "$disabled" = "true"
+        echo "Provider '$provider_name' is already disabled"
+        return 0
+    end
+
+    # Disable provider
+    jq ".providers.\"$provider_name\".disabled = true" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+
+    if test $status -eq 0
+        echo "✓ Disabled provider '$provider_name'"
+        return 0
+    else
+        echo "Error: Failed to disable provider" >&2
+        return 1
+    end
+end
+
+function _claude-switch_provider_enable -a models_file provider_name
+    # Check if provider exists
+    set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
+    if test "$exists" != "true"
+        echo "Error: Provider '$provider_name' not found" >&2
+        return 1
+    end
+
+    # Check if already enabled
+    set -l disabled (jq -r ".providers.\"$provider_name\".disabled // false" "$models_file")
+    if test "$disabled" != "true"
+        echo "Provider '$provider_name' is already enabled"
+        return 0
+    end
+
+    # Enable provider
+    jq ".providers.\"$provider_name\".disabled = false" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+
+    if test $status -eq 0
+        echo "✓ Enabled provider '$provider_name'"
+        return 0
+    else
+        echo "Error: Failed to enable provider" >&2
         return 1
     end
 end
@@ -618,7 +751,7 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     end
 end
 
-function _claude-switch_model_list -a models_file provider_name
+function _claude-switch_model_list -a models_file provider_name show_all
     if test -n "$provider_name"
         # List models for specific provider
         set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
@@ -629,18 +762,44 @@ function _claude-switch_model_list -a models_file provider_name
 
         echo "Models for provider '$provider_name':"
         echo ""
-        set -l models (jq -r ".providers.\"$provider_name\".models[] | \"\\(.model)|\\(.description // \"\")\"" "$models_file")
-        if test (count $models) -eq 0
-            echo "  No models configured."
-        else
-            for model in $models
-                set -l parts (string split '|' "$model")
-                echo "  - $parts[1]: $parts[2]"
+
+        set -l provider_disabled (jq -r ".providers.\"$provider_name\".disabled // false" "$models_file")
+        if test "$provider_disabled" = "true"
+            echo "  [Provider is disabled]"
+            echo ""
+        end
+
+        set -l model_count 0
+        set -l models (jq -r ".providers.\"$provider_name\".models[] | \"\\(.model)|\\(.description // \"\")|\\(.disabled // false)\"" "$models_file")
+        for model in $models
+            set -l parts (string split '|' "$model")
+            set -l model_name "$parts[1]"
+            set -l model_desc "$parts[2]"
+            set -l model_disabled "$parts[3]"
+
+            # Skip disabled models unless show_all is true
+            if test "$model_disabled" = "true" -a "$show_all" != "1"
+                continue
+            end
+
+            set -l model_count (math $model_count + 1)
+            set -l status_mark ""
+            if test "$model_disabled" = "true"
+                set status_mark " [DISABLED]"
+            end
+            echo "  - $model_name$status_mark: $model_desc"
+        end
+
+        if test $model_count -eq 0
+            if test "$show_all" = "1"
+                echo "  No models configured."
+            else
+                echo "  No enabled models. Use --all to show disabled models."
             end
         end
     else
         # List all models (use existing function)
-        _claude-switch_list_models "$models_file"
+        _claude-switch_list_models "$models_file" "$show_all"
     end
 end
 
@@ -851,6 +1010,74 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     end
 end
 
+function _claude-switch_model_disable -a models_file provider_name model_name
+    # Check if provider exists
+    set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
+    if test "$exists" != "true"
+        echo "Error: Provider '$provider_name' not found" >&2
+        return 1
+    end
+
+    # Check if model exists
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    if test -z "$model_exists"
+        echo "Error: Model '$model_name' not found in provider '$provider_name'" >&2
+        return 1
+    end
+
+    # Check if already disabled
+    set -l disabled (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .disabled // false" "$models_file")
+    if test "$disabled" = "true"
+        echo "Model '$model_name' in provider '$provider_name' is already disabled"
+        return 0
+    end
+
+    # Disable model
+    jq ".providers.\"$provider_name\".models |= map(if .model == \"$model_name\" then . + {disabled: true} else . end)" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+
+    if test $status -eq 0
+        echo "✓ Disabled model '$model_name' in provider '$provider_name'"
+        return 0
+    else
+        echo "Error: Failed to disable model" >&2
+        return 1
+    end
+end
+
+function _claude-switch_model_enable -a models_file provider_name model_name
+    # Check if provider exists
+    set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
+    if test "$exists" != "true"
+        echo "Error: Provider '$provider_name' not found" >&2
+        return 1
+    end
+
+    # Check if model exists
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    if test -z "$model_exists"
+        echo "Error: Model '$model_name' not found in provider '$provider_name'" >&2
+        return 1
+    end
+
+    # Check if already enabled
+    set -l disabled (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .disabled // false" "$models_file")
+    if test "$disabled" != "true"
+        echo "Model '$model_name' in provider '$provider_name' is already enabled"
+        return 0
+    end
+
+    # Enable model
+    jq ".providers.\"$provider_name\".models |= map(if .model == \"$model_name\" then . + {disabled: false} else . end)" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+
+    if test $status -eq 0
+        echo "✓ Enabled model '$model_name' in provider '$provider_name'"
+        return 0
+    else
+        echo "Error: Failed to enable model" >&2
+        return 1
+    end
+end
+
 function _claude-switch_create_default_config -a models_file
     mkdir -p (dirname "$models_file")
     echo '{
@@ -891,7 +1118,7 @@ function _claude-switch_edit_config -a models_file
     end
 end
 
-function _claude-switch_list_models -a models_file
+function _claude-switch_list_models -a models_file show_all
     echo "Available Claude Models:"
     echo ""
 
@@ -899,17 +1126,47 @@ function _claude-switch_list_models -a models_file
     set -l providers (jq -r '.providers | keys[]' "$models_file" 2>/dev/null)
 
     for provider in $providers
-        echo "Provider: $provider"
+        set -l provider_disabled (jq -r ".providers.\"$provider\".disabled // false" "$models_file")
+
+        # Skip disabled providers unless show_all is true
+        if test "$provider_disabled" = "true" -a "$show_all" != "1"
+            continue
+        end
+
+        set -l status_mark ""
+        if test "$provider_disabled" = "true"
+            set status_mark " [DISABLED]"
+        end
+        echo "Provider: $provider$status_mark"
         set -l auth_token (jq -r ".providers.\"$provider\".auth_token" "$models_file")
         set -l base_url (jq -r ".providers.\"$provider\".base_url" "$models_file")
         echo "  Auth token: $auth_token"
         echo "  Base URL: $base_url"
         echo "  Models:"
 
-        set -l models (jq -r ".providers.\"$provider\".models[] | \"\\(.model)|\\(.description)\"" "$models_file")
+        set -l model_count 0
+        set -l models (jq -r ".providers.\"$provider\".models[] | \"\\(.model)|\\(.description)|\\(.disabled // false)\"" "$models_file")
         for model in $models
             set -l parts (string split '|' "$model")
-            echo "    - $parts[1]: $parts[2]"
+            set -l model_name "$parts[1]"
+            set -l model_desc "$parts[2]"
+            set -l model_disabled "$parts[3]"
+
+            # Skip disabled models unless show_all is true
+            if test "$model_disabled" = "true" -a "$show_all" != "1"
+                continue
+            end
+
+            set -l model_status ""
+            if test "$model_disabled" = "true"
+                set model_status " [DISABLED]"
+            end
+            echo "    - $model_name$model_status: $model_desc"
+            set -l model_count (math $model_count + 1)
+        end
+
+        if test $model_count -eq 0
+            echo "    No models to display."
         end
         echo ""
     end
@@ -1068,6 +1325,15 @@ function _claude-switch_set_model -a models_file current_file provider model
     # Get provider data
     set -l provider_data (jq -r ".providers.\"$provider\"" "$models_file" 2>/dev/null)
 
+    # Check if provider is disabled
+    set -l provider_disabled (echo "$provider_data" | jq -r '.disabled // false')
+    if test "$provider_disabled" = "true"
+        echo "✗ Failed: Provider '$provider' is disabled." >&2
+        echo "" >&2
+        echo "To enable, run: claude-switch provider enable $provider" >&2
+        return 1
+    end
+
     # Get model details
     set -l model_info (echo "$provider_data" | jq -r ".models[] | select(.model == \"$model\")")
     if test -z "$model_info" -o "$model_info" = null
@@ -1075,6 +1341,15 @@ function _claude-switch_set_model -a models_file current_file provider model
         echo "" >&2
         echo "Available models in '$provider':" >&2
         echo "$provider_data" | jq -r '.models[] | "  - \(.model): \(.description // "No description")"' 2>/dev/null
+        return 1
+    end
+
+    # Check if model is disabled
+    set -l model_disabled (echo "$model_info" | jq -r '.disabled // false')
+    if test "$model_disabled" = "true"
+        echo "✗ Failed: Model '$model' in provider '$provider' is disabled." >&2
+        echo "" >&2
+        echo "To enable, run: claude-switch model enable $provider $model" >&2
         return 1
     end
 
@@ -1141,28 +1416,38 @@ Main Subcommands:
 Provider Management:
   provider add <name> [--auth-token <token>] [--base-url <url>]
                         Add a new provider (interactive if options omitted)
-  provider list          List all providers
+  provider list [--all]  List all providers (use --all to show disabled)
   provider remove <name> Remove a provider (prompts if has models)
   provider update <name> [--auth-token <token>] [--base-url <url>]
                         Update provider settings (partial update)
+  provider disable <name> Disable a provider
+  provider enable <name>  Enable a disabled provider
 
 Model Management:
   model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Add a new model (interactive if description omitted)
-  model list [provider]  List models (all or for specific provider)
+  model list [provider] [--all]
+                        List models (use --all to show disabled)
   model remove <provider> <model>
                         Remove a model (prompts if currently active)
   model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Update model settings (partial update)
+  model disable <provider> <model>
+                        Disable a model
+  model enable <provider> <model>
+                        Enable a disabled model
 
 Examples:
   claude-switch                          Show current configuration
   claude-switch model list               List all models
+  claude-switch model list --all         List all models including disabled
   claude-switch switch Xiaomi/mimo-v2-flash  Switch to a model
   claude-switch export                   Export environment variables
   claude-switch provider add MyProvider --auth-token token123 --base-url https://api.example.com
   claude-switch model add MyProvider my-model --description "My Model"
   claude-switch model list MyProvider    List models for a provider
+  claude-switch provider disable MyProvider  Disable a provider
+  claude-switch model disable MyProvider my-model  Disable a model
 
 Configuration:
   Config file: ~/.config/claude/claude-switch/models.json

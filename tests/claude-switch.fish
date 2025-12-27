@@ -81,28 +81,38 @@ Main Subcommands:
 Provider Management:
   provider add <name> [--auth-token <token>] [--base-url <url>]
                         Add a new provider (interactive if options omitted)
-  provider list          List all providers
+  provider list [--all]  List all providers (use --all to show disabled)
   provider remove <name> Remove a provider (prompts if has models)
   provider update <name> [--auth-token <token>] [--base-url <url>]
                         Update provider settings (partial update)
+  provider disable <name> Disable a provider
+  provider enable <name>  Enable a disabled provider
 
 Model Management:
   model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Add a new model (interactive if description omitted)
-  model list [provider]  List models (all or for specific provider)
+  model list [provider] [--all]
+                        List models (use --all to show disabled)
   model remove <provider> <model>
                         Remove a model (prompts if currently active)
   model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Update model settings (partial update)
+  model disable <provider> <model>
+                        Disable a model
+  model enable <provider> <model>
+                        Enable a disabled model
 
 Examples:
   claude-switch                          Show current configuration
   claude-switch model list               List all models
+  claude-switch model list --all         List all models including disabled
   claude-switch switch Xiaomi/mimo-v2-flash  Switch to a model
   claude-switch export                   Export environment variables
   claude-switch provider add MyProvider --auth-token token123 --base-url https://api.example.com
   claude-switch model add MyProvider my-model --description \"My Model\"
   claude-switch model list MyProvider    List models for a provider
+  claude-switch provider disable MyProvider  Disable a provider
+  claude-switch model disable MyProvider my-model  Disable a model
 
 Configuration:
   Config file: ~/.config/claude/claude-switch/models.json
@@ -132,28 +142,38 @@ Main Subcommands:
 Provider Management:
   provider add <name> [--auth-token <token>] [--base-url <url>]
                         Add a new provider (interactive if options omitted)
-  provider list          List all providers
+  provider list [--all]  List all providers (use --all to show disabled)
   provider remove <name> Remove a provider (prompts if has models)
   provider update <name> [--auth-token <token>] [--base-url <url>]
                         Update provider settings (partial update)
+  provider disable <name> Disable a provider
+  provider enable <name>  Enable a disabled provider
 
 Model Management:
   model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Add a new model (interactive if description omitted)
-  model list [provider]  List models (all or for specific provider)
+  model list [provider] [--all]
+                        List models (use --all to show disabled)
   model remove <provider> <model>
                         Remove a model (prompts if currently active)
   model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
                         Update model settings (partial update)
+  model disable <provider> <model>
+                        Disable a model
+  model enable <provider> <model>
+                        Enable a disabled model
 
 Examples:
   claude-switch                          Show current configuration
   claude-switch model list               List all models
+  claude-switch model list --all         List all models including disabled
   claude-switch switch Xiaomi/mimo-v2-flash  Switch to a model
   claude-switch export                   Export environment variables
   claude-switch provider add MyProvider --auth-token token123 --base-url https://api.example.com
   claude-switch model add MyProvider my-model --description \"My Model\"
   claude-switch model list MyProvider    List models for a provider
+  claude-switch provider disable MyProvider  Disable a provider
+  claude-switch model disable MyProvider my-model  Disable a model
 
 Configuration:
   Config file: ~/.config/claude/claude-switch/models.json
@@ -193,12 +213,14 @@ Provider: TestProvider
   Models:
     - test-model-v1: Test Model Description
     - test-model-v2: Test Model 2 Description
+    No models to display.
 
 Provider: Xiaomi
   Auth token: mimo-api-key
   Base URL: https://api.xiaomimimo.com/anthropic
   Models:
-    - mimo-v2-flash: Xiaomi Mimo V2 Flash"
+    - mimo-v2-flash: Xiaomi Mimo V2 Flash
+    No models to display."
 
 @test "claude-switch model list shows provider" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = "1"
 
@@ -228,12 +250,14 @@ Provider: TestProvider
   Models:
     - test-model-v1: Test Model Description
     - test-model-v2: Test Model 2 Description
+    No models to display.
 
 Provider: Xiaomi
   Auth token: mimo-api-key
   Base URL: https://api.xiaomimimo.com/anthropic
   Models:
-    - mimo-v2-flash: Xiaomi Mimo V2 Flash"
+    - mimo-v2-flash: Xiaomi Mimo V2 Flash
+    No models to display."
 
 @test "claude-switch switch fails with invalid provider" (_test_setup_env; _test_create_mock_config; claude-switch switch InvalidProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Provider 'InvalidProvider' not found in config.
 

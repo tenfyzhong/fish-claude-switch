@@ -90,7 +90,7 @@ Testing framework: [fishtape](https://github.com/jorgebucaran/fishtape)
 
 ```bash
 # Run all tests
-fishtape tests/*
+fish -c 'fishtape tests/*'
 ```
 
 ### Testing Changes
