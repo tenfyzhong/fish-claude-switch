@@ -40,23 +40,36 @@ complete -c claude-switch -n '__fish_use_subcommand' -a switch -d "Switch to a m
 complete -c claude-switch -n '__fish_use_subcommand' -a clear -d "Clear current model configuration"
 complete -c claude-switch -n '__fish_use_subcommand' -a export -d "Export environment variables from current model"
 complete -c claude-switch -n '__fish_use_subcommand' -a unexport -d "Unload all ANTHROPIC environment variables"
-complete -c claude-switch -n '__fish_use_subcommand' -a help -d "Show help message"
 complete -c claude-switch -n '__fish_use_subcommand' -a provider -d "Manage providers"
 complete -c claude-switch -n '__fish_use_subcommand' -a model -d "Manage models"
 
 # Switch subcommand
 complete -c claude-switch -n '__fish_seen_subcommand_from switch' -x -a "(_claude-switch_complete_models)" -d "Provider/model"
+complete -c claude-switch -n '__fish_seen_subcommand_from switch' -s h -l help -d "Show help for switch command"
 
 # Provider subcommands
-complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update' -a add -d "Add a new provider"
-complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update' -a list -d "List all providers"
-complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update' -a remove -d "Remove a provider"
-complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update' -a update -d "Update a provider"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a add -d "Add a new provider"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a list -d "List all providers"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a remove -d "Remove a provider"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a update -d "Update a provider"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a disable -d "Disable a provider"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a enable -d "Enable a provider"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -s h -l help -d "Show help for provider commands"
+
+# Provider list
+complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from list' -l all -d "Show all providers including disabled"
+
+# Provider disable
+complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from disable' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
+
+# Provider enable
+complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from enable' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 
 # Provider add
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from add' -l auth-token -d "Auth token"
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from add' -l base-url -d "Base URL"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from add' -s h -l help -d "Show help for provider add"
 
 # Provider remove
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from remove' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
@@ -65,12 +78,28 @@ complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_s
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from update' -l auth-token -d "Auth token"
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from update' -l base-url -d "Base URL"
+complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from update' -s h -l help -d "Show help for provider update"
 
 # Model subcommands
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update' -a add -d "Add a new model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update' -a list -d "List models"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update' -a remove -d "Remove a model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update' -a update -d "Update a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a add -d "Add a new model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a list -d "List models"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a remove -d "Remove a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a update -d "Update a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a disable -d "Disable a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a enable -d "Enable a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -s h -l help -d "Show help for model commands"
+
+# Model list
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from list' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name (optional)"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from list' -l all -d "Show all models including disabled"
+
+# Model disable
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from disable' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from disable' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Model name"
+
+# Model enable
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from enable' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from enable' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Model name"
 
 # Model add
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
@@ -80,9 +109,7 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-sonnet -d "Default sonnet model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l small-fast-model -d "Small fast model"
-
-# Model list
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from list' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name (optional)"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -s h -l help -d "Show help for model add"
 
 # Helper function to get provider from commandline for model update/remove
 function _claude-switch_get_provider_from_cmdline
@@ -106,6 +133,11 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-sonnet -d "Default sonnet model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l small-fast-model -d "Small fast model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -s h -l help -d "Show help for model update"
 
-# Backward compatibility: -h/--help flags
+# Help flags for main command and subcommands
 complete -c claude-switch -s h -l help -d "Show help message"
+complete -c claude-switch -n '__fish_seen_subcommand_from edit' -s h -l help -d "Show help for edit command"
+complete -c claude-switch -n '__fish_seen_subcommand_from clear' -s h -l help -d "Show help for clear command"
+complete -c claude-switch -n '__fish_seen_subcommand_from export' -s h -l help -d "Show help for export command"
+complete -c claude-switch -n '__fish_seen_subcommand_from unexport' -s h -l help -d "Show help for unexport command"

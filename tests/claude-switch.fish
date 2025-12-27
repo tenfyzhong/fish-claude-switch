@@ -76,47 +76,30 @@ Main Subcommands:
   clear                   Clear current model configuration
   export                  Export environment variables from current model
   unexport                Unload all ANTHROPIC environment variables
-  help                    Show this help message
 
 Provider Management:
-  provider add <name> [--auth-token <token>] [--base-url <url>]
-                        Add a new provider (interactive if options omitted)
-  provider list          List all providers
-  provider remove <name> Remove a provider (prompts if has models)
-  provider update <name> [--auth-token <token>] [--base-url <url>]
-                        Update provider settings (partial update)
+  provider add            Add a new provider
+  provider list           List all providers
+  provider remove         Remove a provider
+  provider update         Update provider settings
+  provider disable        Disable a provider
+  provider enable         Enable a disabled provider
 
 Model Management:
-  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-                        Add a new model (interactive if description omitted)
-  model list [provider]  List models (all or for specific provider)
-  model remove <provider> <model>
-                        Remove a model (prompts if currently active)
-  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-                        Update model settings (partial update)
+  model add               Add a new model
+  model list              List models
+  model remove            Remove a model
+  model update            Update model settings
+  model disable           Disable a model
+  model enable            Enable a disabled model
+
+For detailed help on a specific subcommand, use:
+  claude-switch <subcommand> --help
 
 Examples:
-  claude-switch                          Show current configuration
-  claude-switch model list               List all models
-  claude-switch switch Xiaomi/mimo-v2-flash  Switch to a model
-  claude-switch export                   Export environment variables
-  claude-switch provider add MyProvider --auth-token token123 --base-url https://api.example.com
-  claude-switch model add MyProvider my-model --description \"My Model\"
-  claude-switch model list MyProvider    List models for a provider
-
-Configuration:
-  Config file: ~/.config/claude/claude-switch/models.json
-  Current model: ~/.config/claude/claude-switch/current.json
-  Editor:      \$EDITOR (or vim/vi/nano)
-
-Environment Variables Set (using set -gx):
-  ANTHROPIC_AUTH_TOKEN (from provider)
-  ANTHROPIC_BASE_URL (from provider)
-  ANTHROPIC_MODEL (from model)
-  ANTHROPIC_DEFAULT_HAIKU_MODEL (optional)
-  ANTHROPIC_DEFAULT_OPUS_MODEL (optional)
-  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)
-  ANTHROPIC_SMALL_FAST_MODEL (optional)"
+  claude-switch switch --help      Show detailed help for switch command
+  claude-switch provider --help    Show detailed help for provider commands
+  claude-switch model --help       Show detailed help for model commands"
 
 @test "claude-switch -h shows help" (_test_setup_env; claude-switch -h 2>&1 | string collect; _test_cleanup_env) = "claude-switch: Switch between different Claude code provider APIs
 Usage: claude-switch [subcommand] [options]
@@ -127,47 +110,30 @@ Main Subcommands:
   clear                   Clear current model configuration
   export                  Export environment variables from current model
   unexport                Unload all ANTHROPIC environment variables
-  help                    Show this help message
 
 Provider Management:
-  provider add <name> [--auth-token <token>] [--base-url <url>]
-                        Add a new provider (interactive if options omitted)
-  provider list          List all providers
-  provider remove <name> Remove a provider (prompts if has models)
-  provider update <name> [--auth-token <token>] [--base-url <url>]
-                        Update provider settings (partial update)
+  provider add            Add a new provider
+  provider list           List all providers
+  provider remove         Remove a provider
+  provider update         Update provider settings
+  provider disable        Disable a provider
+  provider enable         Enable a disabled provider
 
 Model Management:
-  model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-                        Add a new model (interactive if description omitted)
-  model list [provider]  List models (all or for specific provider)
-  model remove <provider> <model>
-                        Remove a model (prompts if currently active)
-  model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
-                        Update model settings (partial update)
+  model add               Add a new model
+  model list              List models
+  model remove            Remove a model
+  model update            Update model settings
+  model disable           Disable a model
+  model enable            Enable a disabled model
+
+For detailed help on a specific subcommand, use:
+  claude-switch <subcommand> --help
 
 Examples:
-  claude-switch                          Show current configuration
-  claude-switch model list               List all models
-  claude-switch switch Xiaomi/mimo-v2-flash  Switch to a model
-  claude-switch export                   Export environment variables
-  claude-switch provider add MyProvider --auth-token token123 --base-url https://api.example.com
-  claude-switch model add MyProvider my-model --description \"My Model\"
-  claude-switch model list MyProvider    List models for a provider
-
-Configuration:
-  Config file: ~/.config/claude/claude-switch/models.json
-  Current model: ~/.config/claude/claude-switch/current.json
-  Editor:      \$EDITOR (or vim/vi/nano)
-
-Environment Variables Set (using set -gx):
-  ANTHROPIC_AUTH_TOKEN (from provider)
-  ANTHROPIC_BASE_URL (from provider)
-  ANTHROPIC_MODEL (from model)
-  ANTHROPIC_DEFAULT_HAIKU_MODEL (optional)
-  ANTHROPIC_DEFAULT_OPUS_MODEL (optional)
-  ANTHROPIC_DEFAULT_SONNET_MODEL (optional)
-  ANTHROPIC_SMALL_FAST_MODEL (optional)"
+  claude-switch switch --help      Show detailed help for switch command
+  claude-switch provider --help    Show detailed help for provider commands
+  claude-switch model --help       Show detailed help for model commands"
 
 # Show current tests
 @test "claude-switch shows current when no config" (_test_setup_env; _test_create_mock_config; claude-switch 2>&1 | string collect; _test_cleanup_env) = "Current Claude Configuration:
@@ -193,12 +159,14 @@ Provider: TestProvider
   Models:
     - test-model-v1: Test Model Description
     - test-model-v2: Test Model 2 Description
+    No models to display.
 
 Provider: Xiaomi
   Auth token: mimo-api-key
   Base URL: https://api.xiaomimimo.com/anthropic
   Models:
-    - mimo-v2-flash: Xiaomi Mimo V2 Flash"
+    - mimo-v2-flash: Xiaomi Mimo V2 Flash
+    No models to display."
 
 @test "claude-switch model list shows provider" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = "1"
 
@@ -228,12 +196,14 @@ Provider: TestProvider
   Models:
     - test-model-v1: Test Model Description
     - test-model-v2: Test Model 2 Description
+    No models to display.
 
 Provider: Xiaomi
   Auth token: mimo-api-key
   Base URL: https://api.xiaomimimo.com/anthropic
   Models:
-    - mimo-v2-flash: Xiaomi Mimo V2 Flash"
+    - mimo-v2-flash: Xiaomi Mimo V2 Flash
+    No models to display."
 
 @test "claude-switch switch fails with invalid provider" (_test_setup_env; _test_create_mock_config; claude-switch switch InvalidProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Provider 'InvalidProvider' not found in config.
 
@@ -326,3 +296,45 @@ Available models in 'TestProvider':
 @test "claude-switch export exports ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_SMALL_FAST_MODEL"; _test_cleanup_env) = "test-small-fast"
 
 @test "claude-switch unexport clears ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; set -q ANTHROPIC_SMALL_FAST_MODEL && echo "set" || echo "unset"; _test_cleanup_env) = "unset"
+
+# Provider disable/enable tests
+@test "claude-switch provider disable sets disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; jq -r '.providers.TestProvider.disabled' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "true"
+
+@test "claude-switch provider enable clears disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider enable TestProvider >/dev/null 2>&1; jq -r '.providers.TestProvider.disabled // false' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "false"
+
+@test "claude-switch provider disable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch provider disable NonExistent 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
+
+@test "claude-switch provider enable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch provider enable NonExistent 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
+
+@test "claude-switch provider list hides disabled providers" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list 2>&1 | grep -q "Provider: TestProvider" && echo "found" || echo "0"; _test_cleanup_env) = "0"
+
+@test "claude-switch provider list --all shows disabled providers" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list --all 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = "1"
+
+@test "claude-switch provider list --all shows disabled status" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list --all 2>&1 | grep -c "DISABLED"; _test_cleanup_env) = "1"
+
+@test "claude-switch switch fails with disabled provider" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch switch TestProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Provider 'TestProvider' is disabled.
+
+To enable, run: claude-switch provider enable TestProvider"
+
+# Model disable/enable tests
+@test "claude-switch model disable sets disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .disabled' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "true"
+
+@test "claude-switch model enable clears disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model enable TestProvider test-model-v1 >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .disabled // false' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "false"
+
+@test "claude-switch model disable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model disable NonExistent test-model-v1 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
+
+@test "claude-switch model disable fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider non-existent 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
+
+@test "claude-switch model enable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model enable NonExistent test-model-v1 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
+
+@test "claude-switch model enable fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model enable TestProvider non-existent 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
+
+@test "claude-switch model list hides disabled models" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider 2>&1 | grep -q "test-model-v1" && echo "found" || echo "0"; _test_cleanup_env) = "0"
+
+@test "claude-switch model list --all shows disabled models" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider --all 2>&1 | grep -c "test-model-v1"; _test_cleanup_env) = "1"
+
+@test "claude-switch model list --all shows disabled status" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider --all 2>&1 | grep -c "DISABLED"; _test_cleanup_env) = "1"
+
+@test "claude-switch switch fails with disabled model" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch switch TestProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Model 'test-model-v1' in provider 'TestProvider' is disabled.
+
+To enable, run: claude-switch model enable TestProvider test-model-v1"
