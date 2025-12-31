@@ -600,7 +600,7 @@ function _claude-switch_provider_list -a models_file show_all
 
     set -l providers (jq -r '.providers | keys[]' "$models_file" 2>/dev/null)
     if test (count $providers) -eq 0
-        echo "  No providers configured."
+        echo "  No providers to display."
         return 0
     end
 
@@ -613,16 +613,14 @@ function _claude-switch_provider_list -a models_file show_all
             continue
         end
 
-        set -l shown_count (math $shown_count + 1)
+        set shown_count (math $shown_count + 1)
         set -l status_mark ""
         if test "$disabled" = "true"
             set status_mark " [DISABLED]"
         end
         echo "Provider: $provider$status_mark"
-        set -l auth_token (jq -r ".providers.\"$provider\".auth_token" "$models_file")
         set -l base_url (jq -r ".providers.\"$provider\".base_url" "$models_file")
         set -l model_count (jq -r ".providers.\"$provider\".models | length" "$models_file")
-        echo "  Auth token: $auth_token"
         echo "  Base URL: $base_url"
         echo "  Models: $model_count"
         echo ""
