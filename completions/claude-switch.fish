@@ -105,10 +105,11 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 4' -x -d "Model name"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l description -d "Model description"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-haiku -d "Default haiku model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-sonnet -d "Default sonnet model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-haiku -d "Default haiku model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l small-fast-model -d "Small fast model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l disable-flag -d "Disable flag"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -s h -l help -d "Show help for model add"
 
 # Helper function to get provider from commandline for model update/remove
@@ -129,10 +130,11 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Model name"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l description -d "Model description"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-haiku -d "Default haiku model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-sonnet -d "Default sonnet model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-haiku -d "Default haiku model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l small-fast-model -d "Small fast model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l disable-flag -d "Disable flag"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -s h -l help -d "Show help for model update"
 
 # Help flags for main command and subcommands

@@ -57,13 +57,13 @@ function _test_create_mock_config
       ]
     }
   }
-}' > "$models_file"
+}' >"$models_file"
 end
 
 function _test_create_current_config
     set -l current_file "$HOME/.config/claude/claude-switch/current.json"
     mkdir -p (dirname "$current_file")
-    echo '{"provider": "TestProvider", "model": "test-model-v1"}' > "$current_file"
+    echo '{"provider": "TestProvider", "model": "test-model-v1"}' >"$current_file"
 end
 
 # Help tests
@@ -168,9 +168,9 @@ Provider: Xiaomi
     - mimo-v2-flash: Xiaomi Mimo V2 Flash
     No models to display."
 
-@test "claude-switch model list shows provider" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = "1"
+@test "claude-switch model list shows provider" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = 1
 
-@test "claude-switch model list shows model names" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "test-model"; _test_cleanup_env) = "2"
+@test "claude-switch model list shows model names" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "test-model"; _test_cleanup_env) = 2
 
 # Switch model tests
 @test "claude-switch switch switches to valid model" (_test_setup_env; _test_create_mock_config; claude-switch switch TestProvider/test-model-v1 2>&1 | string replace -r 'Config saved to: .+' 'Config saved to: REDACTED' | string collect; _test_cleanup_env) = "✓ Success: Switched to 'TestProvider/test-model-v1'
@@ -182,7 +182,7 @@ Provider: Xiaomi
 
   Run 'claude-switch export' to load environment variables"
 
-@test "claude-switch switch creates current.json when switching" (_test_setup_env; _test_create_mock_config; claude-switch switch TestProvider/test-model-v1 >/dev/null 2>&1; test -f "$HOME/.config/claude/claude-switch/current.json" && echo "exists" || echo "missing"; _test_cleanup_env) = "exists"
+@test "claude-switch switch creates current.json when switching" (_test_setup_env; _test_create_mock_config; claude-switch switch TestProvider/test-model-v1 >/dev/null 2>&1; test -f "$HOME/.config/claude/claude-switch/current.json" && echo "exists" || echo "missing"; _test_cleanup_env) = exists
 
 @test "claude-switch switch current.json has correct content after switching" (_test_setup_env; _test_create_mock_config; claude-switch switch TestProvider/test-model-v1 >/dev/null 2>&1; cat "$HOME/.config/claude/claude-switch/current.json" | string collect; _test_cleanup_env) = "{\"provider\": \"TestProvider\", \"model\": \"test-model-v1\"}"
 
@@ -218,18 +218,18 @@ Available models in 'TestProvider':
   - test-model-v2: Test Model 2 Description"
 
 # Clear tests
-@test "claude-switch clear clears config" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch clear 2>&1 | grep -c "Cleared model configuration file"; _test_cleanup_env) = "1"
+@test "claude-switch clear clears config" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch clear 2>&1 | grep -c "Cleared model configuration file"; _test_cleanup_env) = 1
 
-@test "claude-switch clear removes current.json" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch clear >/dev/null 2>&1; test -f "$HOME/.config/claude/claude-switch/current.json" && echo "exists" || echo "missing"; _test_cleanup_env) = "missing"
+@test "claude-switch clear removes current.json" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch clear >/dev/null 2>&1; test -f "$HOME/.config/claude/claude-switch/current.json" && echo "exists" || echo "missing"; _test_cleanup_env) = missing
 
 # Export tests
-@test "claude-switch export exports env vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_AUTH_TOKEN"; _test_cleanup_env) = "test-token-123"
+@test "claude-switch export exports env vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_AUTH_TOKEN"; _test_cleanup_env) = test-token-123
 
 @test "claude-switch export exports env vars base url" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_BASE_URL"; _test_cleanup_env) = "https://test.example.com/anthropic"
 
-@test "claude-switch export sets ANTHROPIC_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_MODEL"; _test_cleanup_env) = "test-model-v1"
+@test "claude-switch export sets ANTHROPIC_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_MODEL"; _test_cleanup_env) = test-model-v1
 
-@test "claude-switch export sets default model vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_DEFAULT_HAIKU_MODEL"; _test_cleanup_env) = "test-haiku"
+@test "claude-switch export sets default model vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_DEFAULT_HAIKU_MODEL"; _test_cleanup_env) = test-haiku
 
 @test "claude-switch export shows success message" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export 2>&1 | string collect; _test_cleanup_env) = "✓ Loaded model: TestProvider/test-model-v1"
 
@@ -238,16 +238,16 @@ Available models in 'TestProvider':
 # Unexport tests
 @test "claude-switch unexport unexports env vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport 2>&1 | string collect; _test_cleanup_env) = "✓ Unloaded all ANTHROPIC environment variables"
 
-@test "claude-switch unexport clears ANTHROPIC_AUTH_TOKEN" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; test -z "$ANTHROPIC_AUTH_TOKEN" && echo "cleared" || echo "not cleared"; _test_cleanup_env) = "cleared"
+@test "claude-switch unexport clears ANTHROPIC_AUTH_TOKEN" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; test -z "$ANTHROPIC_AUTH_TOKEN" && echo "cleared" || echo "not cleared"; _test_cleanup_env) = cleared
 
-@test "claude-switch unexport clears ANTHROPIC_BASE_URL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; test -z "$ANTHROPIC_BASE_URL" && echo "cleared" || echo "not cleared"; _test_cleanup_env) = "cleared"
+@test "claude-switch unexport clears ANTHROPIC_BASE_URL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; test -z "$ANTHROPIC_BASE_URL" && echo "cleared" || echo "not cleared"; _test_cleanup_env) = cleared
 
 @test "claude-switch unexport clears all env vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; test -z "$ANTHROPIC_MODEL" -a -z "$ANTHROPIC_DEFAULT_HAIKU_MODEL" && echo "all cleared" || echo "not all cleared"; _test_cleanup_env) = "all cleared"
 
-@test "claude-switch export calls unexport first" (_test_setup_env; _test_create_mock_config; _test_create_current_config; set -gx ANTHROPIC_AUTH_TOKEN "old-token"; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_AUTH_TOKEN"; _test_cleanup_env) = "test-token-123"
+@test "claude-switch export calls unexport first" (_test_setup_env; _test_create_mock_config; _test_create_current_config; set -gx ANTHROPIC_AUTH_TOKEN "old-token"; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_AUTH_TOKEN"; _test_cleanup_env) = test-token-123
 
 # Default config creation test
-@test "claude-switch creates default config on first run" (_test_setup_env; claude-switch switch Xiaomi/mimo-v2-flash >/dev/null 2>&1; test -f "$HOME/.config/claude/claude-switch/models.json" && echo "exists" || echo "missing"; _test_cleanup_env) = "exists"
+@test "claude-switch creates default config on first run" (_test_setup_env; claude-switch switch Xiaomi/mimo-v2-flash >/dev/null 2>&1; test -f "$HOME/.config/claude/claude-switch/models.json" && echo "exists" || echo "missing"; _test_cleanup_env) = exists
 
 # Error handling tests
 @test "claude-switch export shows error for invalid JSON in current.json" (_test_setup_env; _test_create_mock_config; mkdir -p "$HOME/.config/claude/claude-switch"; echo "invalid json" > "$HOME/.config/claude/claude-switch/current.json"; claude-switch export 2>&1 | string collect; _test_cleanup_env) = "Warning: current.json contains invalid JSON, skipping export"
@@ -257,69 +257,69 @@ Available models in 'TestProvider':
 @test "claude-switch export shows error for missing model in export" (_test_setup_env; _test_create_mock_config; mkdir -p "$HOME/.config/claude/claude-switch"; echo '{"provider": "TestProvider", "model": "non-existent"}' > "$HOME/.config/claude/claude-switch/current.json"; claude-switch export 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
 
 # Provider CRUD tests
-@test "claude-switch provider list lists providers" (_test_setup_env; _test_create_mock_config; claude-switch provider list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = "1"
+@test "claude-switch provider list lists providers" (_test_setup_env; _test_create_mock_config; claude-switch provider list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = 1
 
-@test "claude-switch provider add adds provider with args" (_test_setup_env; _test_create_mock_config; echo "n" | claude-switch provider add NewProvider --auth-token new-token --base-url https://new.example.com >/dev/null 2>&1; jq -r '.providers.NewProvider.auth_token' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "new-token"
+@test "claude-switch provider add adds provider with args" (_test_setup_env; _test_create_mock_config; echo "n" | claude-switch provider add NewProvider --auth-token new-token --base-url https://new.example.com >/dev/null 2>&1; jq -r '.providers.NewProvider.auth_token' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = new-token
 
 @test "claude-switch provider add fails if provider exists" (_test_setup_env; _test_create_mock_config; claude-switch provider add TestProvider --auth-token token --base-url url 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'TestProvider' already exists"
 
-@test "claude-switch provider remove removes provider" (_test_setup_env; _test_create_mock_config; echo "y" | claude-switch provider remove Xiaomi >/dev/null 2>&1; jq -r '.providers | has("Xiaomi")' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "false"
+@test "claude-switch provider remove removes provider" (_test_setup_env; _test_create_mock_config; echo "y" | claude-switch provider remove Xiaomi >/dev/null 2>&1; jq -r '.providers | has("Xiaomi")' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = false
 
 @test "claude-switch provider remove fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch provider remove NonExistent 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
 
-@test "claude-switch provider update updates provider" (_test_setup_env; _test_create_mock_config; claude-switch provider update TestProvider --auth-token updated-token >/dev/null 2>&1; jq -r '.providers.TestProvider.auth_token' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "updated-token"
+@test "claude-switch provider update updates provider" (_test_setup_env; _test_create_mock_config; claude-switch provider update TestProvider --auth-token updated-token >/dev/null 2>&1; jq -r '.providers.TestProvider.auth_token' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = updated-token
 
 # Model CRUD tests
-@test "claude-switch model list lists all models" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "test-model-v1"; _test_cleanup_env) = "1"
+@test "claude-switch model list lists all models" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "test-model-v1"; _test_cleanup_env) = 1
 
-@test "claude-switch model list filters by provider" (_test_setup_env; _test_create_mock_config; claude-switch model list TestProvider 2>&1 | grep -c "test-model"; _test_cleanup_env) = "2"
+@test "claude-switch model list filters by provider" (_test_setup_env; _test_create_mock_config; claude-switch model list TestProvider 2>&1 | grep -c "test-model"; _test_cleanup_env) = 2
 
-@test "claude-switch model add adds model with args" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model --description "New Model" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "New Model"
+@test "claude-switch model add adds model with args" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model --description "New Model" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "New Model"
 
-@test "claude-switch model add fails if model exists" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider test-model-v1 --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'test-model-v1' already exists in provider 'TestProvider'"
+@test "claude-switch model add fails if model exists" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider test-model-v1 --description "Test" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'test-model-v1' already exists in provider 'TestProvider'"
 
-@test "claude-switch model add fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model add NonExistent model --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
+@test "claude-switch model add fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model add NonExistent model --description "Test" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
 
-@test "claude-switch model remove removes model" (_test_setup_env; _test_create_mock_config; echo "y" | claude-switch model remove TestProvider test-model-v2 >/dev/null 2>&1; test (jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v2") | .model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null | wc -l) -eq 0 && echo "removed" || echo "not removed"; _test_cleanup_env) = "removed"
+@test "claude-switch model remove removes model" (_test_setup_env; _test_create_mock_config; echo "y" | claude-switch model remove TestProvider test-model-v2 >/dev/null 2>&1; test (jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v2") | .model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null | wc -l) -eq 0 && echo "removed" || echo "not removed"; _test_cleanup_env) = removed
 
 @test "claude-switch model remove fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model remove TestProvider non-existent 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
 
-@test "claude-switch model update updates model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated Description" --default-haiku "test-haiku" --default-opus "test-opus" --default-sonnet "test-sonnet" --small-fast-model "test-small-fast" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "Updated Description"
+@test "claude-switch model update updates model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated Description" --default-opus "test-opus" --default-sonnet "test-sonnet" --default-haiku "test-haiku" --small-fast-model "test-small-fast" --disable-flag "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "Updated Description"
 
-@test "claude-switch model update fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider non-existent --description "Test" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
+@test "claude-switch model update fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider non-existent --description "Test" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
 
 # Small fast model tests
-@test "claude-switch model add adds model with small_fast_model" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model-small --description "New Model" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "small-model" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model-small") | .small_fast_model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "small-model"
+@test "claude-switch model add adds model with small_fast_model" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model-small --description "New Model" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "small-model" --disable-flag "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "new-model-small") | .small_fast_model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = small-model
 
-@test "claude-switch model update updates small_fast_model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated" --default-haiku "" --default-opus "" --default-sonnet "" --small-fast-model "updated-small-fast" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .small_fast_model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "updated-small-fast"
+@test "claude-switch model update updates small_fast_model" (_test_setup_env; _test_create_mock_config; claude-switch model update TestProvider test-model-v1 --description "Updated" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "updated-small-fast" --disable-flag "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .small_fast_model' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = updated-small-fast
 
-@test "claude-switch export exports ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_SMALL_FAST_MODEL"; _test_cleanup_env) = "test-small-fast"
+@test "claude-switch export exports ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_SMALL_FAST_MODEL"; _test_cleanup_env) = test-small-fast
 
-@test "claude-switch unexport clears ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; set -q ANTHROPIC_SMALL_FAST_MODEL && echo "set" || echo "unset"; _test_cleanup_env) = "unset"
+@test "claude-switch unexport clears ANTHROPIC_SMALL_FAST_MODEL" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; claude-switch unexport >/dev/null 2>&1; set -q ANTHROPIC_SMALL_FAST_MODEL && echo "set" || echo "unset"; _test_cleanup_env) = unset
 
 # Provider disable/enable tests
-@test "claude-switch provider disable sets disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; jq -r '.providers.TestProvider.disabled' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "true"
+@test "claude-switch provider disable sets disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; jq -r '.providers.TestProvider.disabled' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = true
 
-@test "claude-switch provider enable clears disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider enable TestProvider >/dev/null 2>&1; jq -r '.providers.TestProvider.disabled // false' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "false"
+@test "claude-switch provider enable clears disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider enable TestProvider >/dev/null 2>&1; jq -r '.providers.TestProvider.disabled // false' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = false
 
 @test "claude-switch provider disable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch provider disable NonExistent 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
 
 @test "claude-switch provider enable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch provider enable NonExistent 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
 
-@test "claude-switch provider list hides disabled providers" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list 2>&1 | grep -q "Provider: TestProvider" && echo "found" || echo "0"; _test_cleanup_env) = "0"
+@test "claude-switch provider list hides disabled providers" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list 2>&1 | grep -q "Provider: TestProvider" && echo "found" || echo "0"; _test_cleanup_env) = 0
 
-@test "claude-switch provider list --all shows disabled providers" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list --all 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = "1"
+@test "claude-switch provider list --all shows disabled providers" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list --all 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = 1
 
-@test "claude-switch provider list --all shows disabled status" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list --all 2>&1 | grep -c "DISABLED"; _test_cleanup_env) = "1"
+@test "claude-switch provider list --all shows disabled status" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch provider list --all 2>&1 | grep -c "DISABLED"; _test_cleanup_env) = 1
 
 @test "claude-switch switch fails with disabled provider" (_test_setup_env; _test_create_mock_config; claude-switch provider disable TestProvider >/dev/null 2>&1; claude-switch switch TestProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Provider 'TestProvider' is disabled.
 
 To enable, run: claude-switch provider enable TestProvider"
 
 # Model disable/enable tests
-@test "claude-switch model disable sets disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .disabled' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "true"
+@test "claude-switch model disable sets disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .disabled' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = true
 
-@test "claude-switch model enable clears disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model enable TestProvider test-model-v1 >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .disabled // false' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "false"
+@test "claude-switch model enable clears disabled flag" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model enable TestProvider test-model-v1 >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.model == "test-model-v1") | .disabled // false' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = false
 
 @test "claude-switch model disable fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model disable NonExistent test-model-v1 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"
 
@@ -329,11 +329,11 @@ To enable, run: claude-switch provider enable TestProvider"
 
 @test "claude-switch model enable fails if model not found" (_test_setup_env; _test_create_mock_config; claude-switch model enable TestProvider non-existent 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'non-existent' not found in provider 'TestProvider'"
 
-@test "claude-switch model list hides disabled models" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider 2>&1 | grep -q "test-model-v1" && echo "found" || echo "0"; _test_cleanup_env) = "0"
+@test "claude-switch model list hides disabled models" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider 2>&1 | grep -q "test-model-v1" && echo "found" || echo "0"; _test_cleanup_env) = 0
 
-@test "claude-switch model list --all shows disabled models" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider --all 2>&1 | grep -c "test-model-v1"; _test_cleanup_env) = "1"
+@test "claude-switch model list --all shows disabled models" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider --all 2>&1 | grep -c "test-model-v1"; _test_cleanup_env) = 1
 
-@test "claude-switch model list --all shows disabled status" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider --all 2>&1 | grep -c "DISABLED"; _test_cleanup_env) = "1"
+@test "claude-switch model list --all shows disabled status" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch model list TestProvider --all 2>&1 | grep -c "DISABLED"; _test_cleanup_env) = 1
 
 @test "claude-switch switch fails with disabled model" (_test_setup_env; _test_create_mock_config; claude-switch model disable TestProvider test-model-v1 >/dev/null 2>&1; claude-switch switch TestProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Model 'test-model-v1' in provider 'TestProvider' is disabled.
 

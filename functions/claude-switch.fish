@@ -292,21 +292,23 @@ function claude-switch --description 'Switch between different Claude code provi
                     end
                     if test (count $argv) -lt 4
                         echo "Error: 'model add' requires provider and model name" >&2
-                        echo "Usage: claude-switch model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]" >&2
+                        echo "Usage: claude-switch model add <provider> <model> [--description <desc>] [--default-opus <model>] [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
                     set -l model_name "$argv[4]"
                     set -l description ""
-                    set -l default_haiku ""
                     set -l default_opus ""
                     set -l default_sonnet ""
+                    set -l default_haiku ""
                     set -l small_fast_model ""
                     set -l has_description 0
-                    set -l has_default_haiku 0
                     set -l has_default_opus 0
                     set -l has_default_sonnet 0
+                    set -l has_default_haiku 0
                     set -l has_small_fast_model 0
+                    set -l disable_flag ""
+                    set -l has_disable_flag 0
                     # Parse flags
                     set -l i 5
                     while test $i -le (count $argv)
@@ -321,12 +323,6 @@ function claude-switch --description 'Switch between different Claude code provi
                                     set description "$argv[$i]"
                                     set has_description 1
                                 end
-                            case --default-haiku
-                                set i (math $i + 1)
-                                if test $i -le (count $argv)
-                                    set default_haiku "$argv[$i]"
-                                    set has_default_haiku 1
-                                end
                             case --default-opus
                                 set i (math $i + 1)
                                 if test $i -le (count $argv)
@@ -339,16 +335,28 @@ function claude-switch --description 'Switch between different Claude code provi
                                     set default_sonnet "$argv[$i]"
                                     set has_default_sonnet 1
                                 end
+                            case --default-haiku
+                                set i (math $i + 1)
+                                if test $i -le (count $argv)
+                                    set default_haiku "$argv[$i]"
+                                    set has_default_haiku 1
+                                end
                             case --small-fast-model
                                 set i (math $i + 1)
                                 if test $i -le (count $argv)
                                     set small_fast_model "$argv[$i]"
                                     set has_small_fast_model 1
                                 end
+                            case --disable-flag
+                                set i (math $i + 1)
+                                if test $i -le (count $argv)
+                                    set disable_flag "$argv[$i]"
+                                    set has_disable_flag 1
+                                end
                         end
                         set i (math $i + 1)
                     end
-                    _claude-switch_model_add "$models_file" "$provider_name" "$model_name" "$description" "$default_haiku" "$default_opus" "$default_sonnet" "$small_fast_model" "$has_description" "$has_default_haiku" "$has_default_opus" "$has_default_sonnet" "$has_small_fast_model"
+                    _claude-switch_model_add "$models_file" "$provider_name" "$model_name" "$description" "$default_opus" "$default_sonnet" "$default_haiku" "$small_fast_model" "$disable_flag" "$has_description" "$has_default_opus" "$has_default_sonnet" "$has_default_haiku" "$has_small_fast_model" "$has_disable_flag"
                     return $status
 
                 case list
@@ -393,21 +401,23 @@ function claude-switch --description 'Switch between different Claude code provi
                     end
                     if test (count $argv) -lt 4
                         echo "Error: 'model update' requires provider and model name" >&2
-                        echo "Usage: claude-switch model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]" >&2
+                        echo "Usage: claude-switch model update <provider> <model> [--description <desc>] [--default-opus <model>] [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
                     set -l model_name "$argv[4]"
                     set -l description ""
-                    set -l default_haiku ""
                     set -l default_opus ""
                     set -l default_sonnet ""
+                    set -l default_haiku ""
                     set -l small_fast_model ""
                     set -l has_description 0
-                    set -l has_default_haiku 0
                     set -l has_default_opus 0
                     set -l has_default_sonnet 0
+                    set -l has_default_haiku 0
                     set -l has_small_fast_model 0
+                    set -l disable_flag ""
+                    set -l has_disable_flag 0
                     # Parse flags
                     set -l i 5
                     while test $i -le (count $argv)
@@ -422,12 +432,6 @@ function claude-switch --description 'Switch between different Claude code provi
                                     set description "$argv[$i]"
                                     set has_description 1
                                 end
-                            case --default-haiku
-                                set i (math $i + 1)
-                                if test $i -le (count $argv)
-                                    set default_haiku "$argv[$i]"
-                                    set has_default_haiku 1
-                                end
                             case --default-opus
                                 set i (math $i + 1)
                                 if test $i -le (count $argv)
@@ -440,16 +444,28 @@ function claude-switch --description 'Switch between different Claude code provi
                                     set default_sonnet "$argv[$i]"
                                     set has_default_sonnet 1
                                 end
+                            case --default-haiku
+                                set i (math $i + 1)
+                                if test $i -le (count $argv)
+                                    set default_haiku "$argv[$i]"
+                                    set has_default_haiku 1
+                                end
                             case --small-fast-model
                                 set i (math $i + 1)
                                 if test $i -le (count $argv)
                                     set small_fast_model "$argv[$i]"
                                     set has_small_fast_model 1
                                 end
+                            case --disable-flag
+                                set i (math $i + 1)
+                                if test $i -le (count $argv)
+                                    set disable_flag "$argv[$i]"
+                                    set has_disable_flag 1
+                                end
                         end
                         set i (math $i + 1)
                     end
-                    _claude-switch_model_update "$models_file" "$provider_name" "$model_name" "$description" "$default_haiku" "$default_opus" "$default_sonnet" "$small_fast_model" "$has_description" "$has_default_haiku" "$has_default_opus" "$has_default_sonnet" "$has_small_fast_model"
+                    _claude-switch_model_update "$models_file" "$provider_name" "$model_name" "$description" "$default_opus" "$default_sonnet" "$default_haiku" "$small_fast_model" "$disable_flag" "$has_description" "$has_default_opus" "$has_default_sonnet" "$has_default_haiku" "$has_small_fast_model" "$has_disable_flag"
                     return $status
 
                 case disable
@@ -747,7 +763,7 @@ function _claude-switch_provider_enable -a models_file provider_name
 end
 
 # Model CRUD functions
-function _claude-switch_model_add -a models_file provider_name model_name description default_haiku default_opus default_sonnet small_fast_model has_description has_default_haiku has_default_opus has_default_sonnet has_small_fast_model
+function _claude-switch_model_add -a models_file provider_name model_name description default_opus default_sonnet default_haiku small_fast_model disable_flag has_description has_default_opus has_default_sonnet has_default_haiku has_small_fast_model has_disable_flag
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -773,15 +789,6 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     end
 
     # Interactive mode for default model fields if missing (not provided via command line)
-    if test "$has_default_haiku" -eq 0
-        set default_haiku (_claude-switch_prompt_optional "Enter default haiku model")
-        if test $status -eq 130
-            echo "" >&2
-            echo "Cancelled." >&2
-            return 130
-        end
-    end
-
     if test "$has_default_opus" -eq 0
         set default_opus (_claude-switch_prompt_optional "Enter default opus model")
         if test $status -eq 130
@@ -800,8 +807,26 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
         end
     end
 
+    if test "$has_default_haiku" -eq 0
+        set default_haiku (_claude-switch_prompt_optional "Enter default haiku model")
+        if test $status -eq 130
+            echo "" >&2
+            echo "Cancelled." >&2
+            return 130
+        end
+    end
+
     if test "$has_small_fast_model" -eq 0
         set small_fast_model (_claude-switch_prompt_optional "Enter small fast model")
+        if test $status -eq 130
+            echo "" >&2
+            echo "Cancelled." >&2
+            return 130
+        end
+    end
+
+    if test "$has_disable_flag" -eq 0
+        set disable_flag (_claude-switch_prompt_optional "Enter disable flag")
         if test $status -eq 130
             echo "" >&2
             echo "Cancelled." >&2
@@ -814,17 +839,20 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     if test -n "$description"
         set jq_args $jq_args --arg desc "$description"
     end
-    if test -n "$default_haiku"
-        set jq_args $jq_args --arg haiku "$default_haiku"
-    end
     if test -n "$default_opus"
         set jq_args $jq_args --arg opus "$default_opus"
     end
     if test -n "$default_sonnet"
         set jq_args $jq_args --arg sonnet "$default_sonnet"
     end
+    if test -n "$default_haiku"
+        set jq_args $jq_args --arg haiku "$default_haiku"
+    end
     if test -n "$small_fast_model"
         set jq_args $jq_args --arg small_fast "$small_fast_model"
+    end
+    if test -n "$disable_flag"
+        set jq_args $jq_args --arg disable_flag "$disable_flag"
     end
 
     # Build the model object JSON
@@ -832,17 +860,20 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     if test -n "$description"
         set model_obj_expr "$model_obj_expr, description: \$desc"
     end
-    if test -n "$default_haiku"
-        set model_obj_expr "$model_obj_expr, default_haiku_model: \$haiku"
-    end
     if test -n "$default_opus"
         set model_obj_expr "$model_obj_expr, default_opus_model: \$opus"
     end
     if test -n "$default_sonnet"
         set model_obj_expr "$model_obj_expr, default_sonnet_model: \$sonnet"
     end
+    if test -n "$default_haiku"
+        set model_obj_expr "$model_obj_expr, default_haiku_model: \$haiku"
+    end
     if test -n "$small_fast_model"
         set model_obj_expr "$model_obj_expr, small_fast_model: \$small_fast"
+    end
+    if test -n "$disable_flag"
+        set model_obj_expr "$model_obj_expr, disable_flag: \$disable_flag"
     end
     set model_obj_expr "$model_obj_expr}"
 
@@ -962,7 +993,7 @@ function _claude-switch_model_remove -a models_file current_file provider_name m
     end
 end
 
-function _claude-switch_model_update -a models_file provider_name model_name description default_haiku default_opus default_sonnet small_fast_model has_description has_default_haiku has_default_opus has_default_sonnet has_small_fast_model
+function _claude-switch_model_update -a models_file provider_name model_name description default_opus default_sonnet default_haiku small_fast_model disable_flag has_description has_default_opus has_default_sonnet has_default_haiku has_small_fast_model has_disable_flag
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -980,17 +1011,19 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     # Get current model data for default values
     set -l current_model (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\")" "$models_file")
     set -l current_description (echo "$current_model" | jq -r '.description // ""')
-    set -l current_default_haiku (echo "$current_model" | jq -r '.default_haiku_model // ""')
     set -l current_default_opus (echo "$current_model" | jq -r '.default_opus_model // ""')
     set -l current_default_sonnet (echo "$current_model" | jq -r '.default_sonnet_model // ""')
+    set -l current_default_haiku (echo "$current_model" | jq -r '.default_haiku_model // ""')
     set -l current_small_fast_model (echo "$current_model" | jq -r '.small_fast_model // ""')
+    set -l current_disable_flag (echo "$current_model" | jq -r '.disable_flag // ""')
 
     # Track which fields should be updated (1 = update, 0 = keep current)
     set -l update_description 0
-    set -l update_default_haiku 0
     set -l update_default_opus 0
     set -l update_default_sonnet 0
+    set -l update_default_haiku 0
     set -l update_small_fast_model 0
+    set -l update_disable_flag 0
 
     # Interactive mode if parameters are missing (use current values as defaults)
     if test "$has_description" -eq 0
@@ -1012,22 +1045,6 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     else
         # Parameter was provided via command line, always update
         set update_description 1
-    end
-
-    if test "$has_default_haiku" -eq 0
-        set default_haiku (_claude-switch_prompt_string "Enter default haiku model" "$current_default_haiku")
-        if test $status -eq 130
-            echo "" >&2
-            echo "Cancelled." >&2
-            return 130
-        end
-        if test "$default_haiku" != "$current_default_haiku"
-            set update_default_haiku 1
-        else
-            set update_default_haiku 0
-        end
-    else
-        set update_default_haiku 1
     end
 
     if test "$has_default_opus" -eq 0
@@ -1062,6 +1079,22 @@ function _claude-switch_model_update -a models_file provider_name model_name des
         set update_default_sonnet 1
     end
 
+    if test "$has_default_haiku" -eq 0
+        set default_haiku (_claude-switch_prompt_string "Enter default haiku model" "$current_default_haiku")
+        if test $status -eq 130
+            echo "" >&2
+            echo "Cancelled." >&2
+            return 130
+        end
+        if test "$default_haiku" != "$current_default_haiku"
+            set update_default_haiku 1
+        else
+            set update_default_haiku 0
+        end
+    else
+        set update_default_haiku 1
+    end
+
     if test "$has_small_fast_model" -eq 0
         set small_fast_model (_claude-switch_prompt_string "Enter small fast model" "$current_small_fast_model")
         if test $status -eq 130
@@ -1078,6 +1111,22 @@ function _claude-switch_model_update -a models_file provider_name model_name des
         set update_small_fast_model 1
     end
 
+    if test "$has_disable_flag" -eq 0
+        set disable_flag (_claude-switch_prompt_string "Enter disable flag" "$current_disable_flag")
+        if test $status -eq 130
+            echo "" >&2
+            echo "Cancelled." >&2
+            return 130
+        end
+        if test "$disable_flag" != "$current_disable_flag"
+            set update_disable_flag 1
+        else
+            set update_disable_flag 0
+        end
+    else
+        set update_disable_flag 1
+    end
+
     # Build update object using jq with --arg (only update fields that were changed)
     set -l jq_args --arg model "$model_name"
     set -l update_expr ".providers.\"$provider_name\".models |= map(if .model == \$model then ."
@@ -1085,10 +1134,6 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     if test $update_description -eq 1
         set jq_args $jq_args --arg desc "$description"
         set update_expr "$update_expr + {description: \$desc}"
-    end
-    if test $update_default_haiku -eq 1
-        set jq_args $jq_args --arg haiku "$default_haiku"
-        set update_expr "$update_expr + {default_haiku_model: \$haiku}"
     end
     if test $update_default_opus -eq 1
         set jq_args $jq_args --arg opus "$default_opus"
@@ -1098,9 +1143,17 @@ function _claude-switch_model_update -a models_file provider_name model_name des
         set jq_args $jq_args --arg sonnet "$default_sonnet"
         set update_expr "$update_expr + {default_sonnet_model: \$sonnet}"
     end
+    if test $update_default_haiku -eq 1
+        set jq_args $jq_args --arg haiku "$default_haiku"
+        set update_expr "$update_expr + {default_haiku_model: \$haiku}"
+    end
     if test $update_small_fast_model -eq 1
         set jq_args $jq_args --arg small_fast "$small_fast_model"
         set update_expr "$update_expr + {small_fast_model: \$small_fast}"
+    end
+    if test $update_disable_flag -eq 1
+        set jq_args $jq_args --arg disable_flag "$disable_flag"
+        set update_expr "$update_expr + {disable_flag: \$disable_flag}"
     end
 
     set update_expr "$update_expr else . end)"
@@ -1294,6 +1347,7 @@ function _claude-switch_unexport_env
     set -ge ANTHROPIC_DEFAULT_OPUS_MODEL
     set -ge ANTHROPIC_DEFAULT_SONNET_MODEL
     set -ge ANTHROPIC_SMALL_FAST_MODEL
+    set -ge ANTHROPIC_DISABLE_FLAG
 
     echo "✓ Unloaded all ANTHROPIC environment variables"
 end
@@ -1354,6 +1408,7 @@ function _claude-switch_export_env -a current_file models_file
     set -l default_opus (echo "$model_info" | jq -r '.default_opus_model // ""')
     set -l default_sonnet (echo "$model_info" | jq -r '.default_sonnet_model // ""')
     set -l small_fast_model (echo "$model_info" | jq -r '.small_fast_model // ""')
+    set -l disable_flag (echo "$model_info" | jq -r '.disable_flag // ""')
 
     # First, unexport any existing environment variables
     _claude-switch_unexport_env >/dev/null 2>&1
@@ -1373,6 +1428,9 @@ function _claude-switch_export_env -a current_file models_file
     end
     if test -n "$small_fast_model"
         set -gx ANTHROPIC_SMALL_FAST_MODEL "$small_fast_model"
+    end
+    if test -n "$disable_flag"
+        set -gx ANTHROPIC_DISABLE_FLAG "$disable_flag"
     end
 
     echo "✓ Loaded model: $provider/$model_name"
@@ -1715,8 +1773,8 @@ function _claude-switch_help_model
 Usage: claude-switch model <subcommand> [options]
 
 Subcommands:
-  add <provider> <model> [--description <desc>] [--default-haiku <model>]
-        [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+  add <provider> <model> [--description <desc>] [--default-opus <model>]
+        [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]
     Add a new model to a provider. If description or other optional fields
     are omitted, you will be prompted interactively.
 
@@ -1728,8 +1786,8 @@ Subcommands:
     Remove a model from a provider. If the model is currently active,
     you will be prompted for confirmation.
 
-  update <provider> <model> [--description <desc>] [--default-haiku <model>]
-        [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+  update <provider> <model> [--description <desc>] [--default-opus <model>]
+        [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]
     Update model settings. Only provided fields will be updated.
     Omitted fields keep their current values.
 
