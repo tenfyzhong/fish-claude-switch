@@ -10,12 +10,12 @@ This is a Fish shell plugin (`fish-claude-switch`) that enables switching betwee
 
 ### Core Components
 
-**1. Main Function File: `functions/claude-switch.fish`** (1123 lines)
+**1. Main Function File: `functions/claude-switch.fish`** (~1800 lines)
 
 - Primary command handler with subcommand routing
 - Configuration management (models.json and current.json)
-- Provider CRUD operations
-- Model CRUD operations
+- Provider CRUD operations (add/remove/update/list/enable/disable)
+- Model CRUD operations (add/remove/update/list/enable/disable)
 - Environment variable export/unexport
 - Interactive prompts for missing parameters
 
@@ -24,9 +24,8 @@ This is a Fish shell plugin (`fish-claude-switch`) that enables switching betwee
 - Wraps the actual `claude` command
 - Automatically exports environment variables before running claude
 - Cleans up after execution with unexport
-- Provides seamless integration with the claude CLI
 
-**3. Completions: `completions/claude-switch.fish`** (110 lines)
+**3. Completions: `completions/claude-switch.fish`** (~145 lines)
 
 - Fish shell tab completions for all subcommands
 - Dynamic completions for providers and models from config
@@ -34,8 +33,8 @@ This is a Fish shell plugin (`fish-claude-switch`) that enables switching betwee
 
 **4. Tests: `tests/` directory**
 
-- `claude-switch.fish`: 40+ unit tests covering all functionality
-- `claude-switch-completions.fish`: 10+ tests for completion functions
+- `claude-switch.fish`: Unit tests for main functionality
+- `claude-switch-completions.fish`: Tests for completion functions
 
 ### Configuration Files
 
@@ -49,10 +48,12 @@ This is a Fish shell plugin (`fish-claude-switch`) that enables switching betwee
       "ProviderName": {
         "auth_token": "...",
         "base_url": "...",
+        "disabled": false,
         "models": [
           {
             "model": "model-name",
             "description": "...",
+            "disabled": false,
             "default_haiku_model": "...",
             "default_opus_model": "...",
             "default_sonnet_model": "...",
@@ -121,8 +122,10 @@ The main function uses a switch statement to route subcommands:
 - `clear` - Clears current config and env vars
 - `export` - Exports env vars from current.json
 - `unexport` - Clears all ANTHROPIC_* env vars
-- `provider <cmd>` - Provider management
-- `model <cmd>` - Model management
+- `provider <cmd>` - Provider management (add/remove/update/list/enable/disable)
+- `model <cmd>` - Model management (add/remove/update/list/enable/disable)
+
+List commands support `--all` flag to include disabled providers/models.
 
 ### Interactive Mode
 
@@ -181,42 +184,6 @@ Uses `jq` for all JSON operations:
 
 ## Dependencies
 
-- **fish shell** - Required
+- **fish shell** (≥ 3.0) - Required
 - **jq** - Required for JSON processing
 - **claude CLI** - Required for actual usage (optional for testing)
-
-## File Structure Summary
-
-```
-fish-claude-switch/
-├── functions/
-│   ├── claude-switch.fish    # Main command (1123 lines)
-│   └── claude.fish           # Wrapper for claude CLI (15 lines)
-├── completions/
-│   └── claude-switch.fish    # Tab completions (110 lines)
-├── tests/
-│   ├── claude-switch.fish              # Main tests (40+ tests)
-│   └── claude-switch-completions.fish  # Completion tests (10+ tests)
-├── README.md
-├── LICENSE
-└── CLAUDE.md (this file)
-```
-
-## Usage Examples
-
-```bash
-# Initial setup
-claude-switch provider add Xiaomi --auth-token "key" --base-url "https://api.xiaomimimo.com/anthropic"
-claude-switch model add Xiaomi mimo-v2-flash --description "Xiaomi Mimo V2 Flash"
-
-# Switch and use
-claude-switch switch Xiaomi/mimo-v2-flash
-claude-switch export
-claude "what is 2+2"  # Uses the wrapper
-
-# Or use the wrapper directly (automatically exports)
-claude "what is 2+2"
-
-# Check current config
-claude-switch
-```
