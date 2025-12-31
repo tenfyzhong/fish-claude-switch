@@ -154,19 +154,15 @@ To list available models, run: claude-switch model list"
 @test "claude-switch model list lists models" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | string collect; _test_cleanup_env) = "Available Claude Models:
 
 Provider: TestProvider
-  Auth token: test-token-123
   Base URL: https://test.example.com/anthropic
   Models:
     - test-model-v1: Test Model Description
     - test-model-v2: Test Model 2 Description
-    No models to display.
 
 Provider: Xiaomi
-  Auth token: mimo-api-key
   Base URL: https://api.xiaomimimo.com/anthropic
   Models:
-    - mimo-v2-flash: Xiaomi Mimo V2 Flash
-    No models to display."
+    - mimo-v2-flash: Xiaomi Mimo V2 Flash"
 
 @test "claude-switch model list shows provider" (_test_setup_env; _test_create_mock_config; claude-switch model list 2>&1 | grep -c "Provider: TestProvider"; _test_cleanup_env) = 1
 
@@ -191,19 +187,15 @@ Provider: Xiaomi
 Available Claude Models:
 
 Provider: TestProvider
-  Auth token: test-token-123
   Base URL: https://test.example.com/anthropic
   Models:
     - test-model-v1: Test Model Description
     - test-model-v2: Test Model 2 Description
-    No models to display.
 
 Provider: Xiaomi
-  Auth token: mimo-api-key
   Base URL: https://api.xiaomimimo.com/anthropic
   Models:
-    - mimo-v2-flash: Xiaomi Mimo V2 Flash
-    No models to display."
+    - mimo-v2-flash: Xiaomi Mimo V2 Flash"
 
 @test "claude-switch switch fails with invalid provider" (_test_setup_env; _test_create_mock_config; claude-switch switch InvalidProvider/test-model-v1 2>&1 | string collect; _test_cleanup_env) = "✗ Failed: Provider 'InvalidProvider' not found in config.
 

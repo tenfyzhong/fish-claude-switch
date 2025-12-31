@@ -1304,9 +1304,7 @@ function _claude-switch_list_models -a models_file show_all
             set status_mark " [DISABLED]"
         end
         echo "Provider: $provider$status_mark"
-        set -l auth_token (jq -r ".providers.\"$provider\".auth_token" "$models_file")
         set -l base_url (jq -r ".providers.\"$provider\".base_url" "$models_file")
-        echo "  Auth token: $auth_token"
         echo "  Base URL: $base_url"
         echo "  Models:"
 
@@ -1328,7 +1326,7 @@ function _claude-switch_list_models -a models_file show_all
                 set model_status " [DISABLED]"
             end
             echo "    - $model_name$model_status: $model_desc"
-            set -l model_count (math $model_count + 1)
+            set model_count (math $model_count + 1)
         end
 
         if test $model_count -eq 0
