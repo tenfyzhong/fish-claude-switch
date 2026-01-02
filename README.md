@@ -179,7 +179,7 @@ When you run `claude-switch export`, the following environment variables are set
 
 - `ANTHROPIC_AUTH_TOKEN` - API authentication token
 - `ANTHROPIC_BASE_URL` - API endpoint URL
-- `ANTHROPIC_MODEL` - Selected model name
+- `ANTHROPIC_MODEL` - Model ID (only set if `model` field is configured)
 - `ANTHROPIC_DEFAULT_HAIKU_MODEL` - Default Haiku model (optional)
 - `ANTHROPIC_DEFAULT_OPUS_MODEL` - Default Opus model (optional)
 - `ANTHROPIC_DEFAULT_SONNET_MODEL` - Default Sonnet model (optional)
