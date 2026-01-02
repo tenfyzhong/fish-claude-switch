@@ -2,11 +2,11 @@
 function _claude-switch_complete_models
     set -l models_file "$HOME/.config/claude/claude-switch/models.json"
     if test -f "$models_file" -a -r "$models_file"
-        jq -r '.providers | to_entries[] | .key as $provider | .value.models[] | "\($provider)/\(.model)|\(.description // "")"' "$models_file" 2>/dev/null | while read -l line
+        jq -r '.providers | to_entries[] | .key as $provider | .value.models[] | "\($provider)/\(.name)|\(.description // "")"' "$models_file" 2>/dev/null | while read -l line
             set -l parts (string split '|' "$line")
             set -l model_spec "$parts[1]"
             set -l description "$parts[2]"
-            # If description is empty, use model name as default
+            # If description is empty, use name as default
             if test -z "$description"
                 set -l model_parts (string split '/' "$model_spec")
                 set description "$model_parts[-1]"
@@ -27,7 +27,7 @@ function _claude-switch_complete_models_for_provider
     set -l models_file "$HOME/.config/claude/claude-switch/models.json"
     set -l provider "$argv[1]"
     if test -f "$models_file" -a -r "$models_file" -a -n "$provider"
-        jq -r ".providers.\"$provider\".models[] | .model" "$models_file" 2>/dev/null
+        jq -r ".providers.\"$provider\".models[] | .name" "$models_file" 2>/dev/null
     end
 end
 
@@ -44,7 +44,7 @@ complete -c claude-switch -n '__fish_use_subcommand' -a provider -d "Manage prov
 complete -c claude-switch -n '__fish_use_subcommand' -a model -d "Manage models"
 
 # Switch subcommand
-complete -c claude-switch -n '__fish_seen_subcommand_from switch' -x -a "(_claude-switch_complete_models)" -d "Provider/model"
+complete -c claude-switch -n '__fish_seen_subcommand_from switch' -x -a "(_claude-switch_complete_models)" -d "Provider/name"
 complete -c claude-switch -n '__fish_seen_subcommand_from switch' -s h -l help -d "Show help for switch command"
 
 # Provider subcommands
@@ -103,7 +103,8 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 
 # Model add
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 4' -x -d "Model name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 4' -x -d "Name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l model -d "Model (ANTHROPIC_MODEL value)"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l description -d "Model description"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-sonnet -d "Default sonnet model"
@@ -124,11 +125,12 @@ end
 
 # Model remove
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from remove' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from remove' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Model name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from remove' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Name"
 
 # Model update
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Model name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l model -d "Model (ANTHROPIC_MODEL value)"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l description -d "Model description"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-sonnet -d "Default sonnet model"

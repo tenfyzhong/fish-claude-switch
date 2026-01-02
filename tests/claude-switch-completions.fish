@@ -29,11 +29,12 @@ function _test_create_mock_config
       "base_url": "https://test.example.com/anthropic",
       "models": [
         {
+          "name": "test-model-v1",
           "model": "test-model-v1",
           "description": "Test Model Description"
         },
         {
-          "model": "test-model-v2",
+          "name": "test-model-v2",
           "description": "Test Model 2 Description"
         }
       ]
@@ -43,6 +44,7 @@ function _test_create_mock_config
       "base_url": "https://api.xiaomimimo.com/anthropic",
       "models": [
         {
+          "name": "mimo-v2-flash",
           "model": "mimo-v2-flash",
           "description": "Xiaomi Mimo V2 Flash"
         }
@@ -102,10 +104,10 @@ function _test_create_config_without_descriptions
       "base_url": "https://test.example.com/anthropic",
       "models": [
         {
-          "model": "test-model-v1"
+          "name": "test-model-v1"
         },
         {
-          "model": "test-model-v2",
+          "name": "test-model-v2",
           "description": "Test Model 2 Description"
         }
       ]
