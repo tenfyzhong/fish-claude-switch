@@ -57,21 +57,21 @@ function claude-switch --description 'Switch between different Claude code provi
                 end
             end
             if test (count $argv) -lt 2
-                echo "Error: 'switch' requires a provider/model argument" >&2
-                echo "Usage: claude-switch switch <provider/model>" >&2
+                echo "Error: 'switch' requires a provider/name argument" >&2
+                echo "Usage: claude-switch switch <provider/name>" >&2
                 return 1
             end
             set -l model_spec "$argv[2]"
             if not string match -q '*/*' "$model_spec"
-                echo "Error: Model must be specified as 'provider/model' (e.g., 'Xiaomi/mimo-v2-flash')" >&2
+                echo "Error: Model must be specified as 'provider/name' (e.g., 'Xiaomi/mimo-v2-flash')" >&2
                 echo "" >&2
                 _claude-switch_list_models "$models_file"
                 return 1
             end
             set -l parts (string split '/' "$model_spec" -m 1)
             set -l provider "$parts[1]"
-            set -l model "$parts[2]"
-            _claude-switch_set_model "$models_file" "$current_file" "$provider" "$model"
+            set -l name "$parts[2]"
+            _claude-switch_set_model "$models_file" "$current_file" "$provider" "$name"
             return $status
 
         case clear
@@ -291,17 +291,19 @@ function claude-switch --description 'Switch between different Claude code provi
                         end
                     end
                     if test (count $argv) -lt 4
-                        echo "Error: 'model add' requires provider and model name" >&2
-                        echo "Usage: claude-switch model add <provider> <model> [--description <desc>] [--default-opus <model>] [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]" >&2
+                        echo "Error: 'model add' requires provider and name" >&2
+                        echo "Usage: claude-switch model add <provider> <name> [--model <model>] [--description <desc>] [--default-opus <model>] [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
-                    set -l model_name "$argv[4]"
+                    set -l name "$argv[4]"
+                    set -l model_value ""
                     set -l description ""
                     set -l default_opus ""
                     set -l default_sonnet ""
                     set -l default_haiku ""
                     set -l small_fast_model ""
+                    set -l has_model 0
                     set -l has_description 0
                     set -l has_default_opus 0
                     set -l has_default_sonnet 0
@@ -317,6 +319,12 @@ function claude-switch --description 'Switch between different Claude code provi
                             return 0
                         end
                         switch "$argv[$i]"
+                            case --model
+                                set i (math $i + 1)
+                                if test $i -le (count $argv)
+                                    set model_value "$argv[$i]"
+                                    set has_model 1
+                                end
                             case --description
                                 set i (math $i + 1)
                                 if test $i -le (count $argv)
@@ -356,7 +364,7 @@ function claude-switch --description 'Switch between different Claude code provi
                         end
                         set i (math $i + 1)
                     end
-                    _claude-switch_model_add "$models_file" "$provider_name" "$model_name" "$description" "$default_opus" "$default_sonnet" "$default_haiku" "$small_fast_model" "$disable_flag" "$has_description" "$has_default_opus" "$has_default_sonnet" "$has_default_haiku" "$has_small_fast_model" "$has_disable_flag"
+                    _claude-switch_model_add "$models_file" "$provider_name" "$name" "$model_value" "$description" "$default_opus" "$default_sonnet" "$default_haiku" "$small_fast_model" "$disable_flag" "$has_model" "$has_description" "$has_default_opus" "$has_default_sonnet" "$has_default_haiku" "$has_small_fast_model" "$has_disable_flag"
                     return $status
 
                 case list
@@ -376,13 +384,13 @@ function claude-switch --description 'Switch between different Claude code provi
 
                 case remove
                     if test (count $argv) -lt 4
-                        echo "Error: 'model remove' requires provider and model name" >&2
-                        echo "Usage: claude-switch model remove <provider> <model>" >&2
+                        echo "Error: 'model remove' requires provider and name" >&2
+                        echo "Usage: claude-switch model remove <provider> <name>" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
-                    set -l model_name "$argv[4]"
-                    _claude-switch_model_remove "$models_file" "$current_file" "$provider_name" "$model_name"
+                    set -l name "$argv[4]"
+                    _claude-switch_model_remove "$models_file" "$current_file" "$provider_name" "$name"
                     return $status
 
                 case update
@@ -400,17 +408,19 @@ function claude-switch --description 'Switch between different Claude code provi
                         end
                     end
                     if test (count $argv) -lt 4
-                        echo "Error: 'model update' requires provider and model name" >&2
-                        echo "Usage: claude-switch model update <provider> <model> [--description <desc>] [--default-opus <model>] [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]" >&2
+                        echo "Error: 'model update' requires provider and name" >&2
+                        echo "Usage: claude-switch model update <provider> <name> [--model <model>] [--description <desc>] [--default-opus <model>] [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
-                    set -l model_name "$argv[4]"
+                    set -l name "$argv[4]"
+                    set -l model_value ""
                     set -l description ""
                     set -l default_opus ""
                     set -l default_sonnet ""
                     set -l default_haiku ""
                     set -l small_fast_model ""
+                    set -l has_model 0
                     set -l has_description 0
                     set -l has_default_opus 0
                     set -l has_default_sonnet 0
@@ -426,6 +436,12 @@ function claude-switch --description 'Switch between different Claude code provi
                             return 0
                         end
                         switch "$argv[$i]"
+                            case --model
+                                set i (math $i + 1)
+                                if test $i -le (count $argv)
+                                    set model_value "$argv[$i]"
+                                    set has_model 1
+                                end
                             case --description
                                 set i (math $i + 1)
                                 if test $i -le (count $argv)
@@ -465,29 +481,29 @@ function claude-switch --description 'Switch between different Claude code provi
                         end
                         set i (math $i + 1)
                     end
-                    _claude-switch_model_update "$models_file" "$provider_name" "$model_name" "$description" "$default_opus" "$default_sonnet" "$default_haiku" "$small_fast_model" "$disable_flag" "$has_description" "$has_default_opus" "$has_default_sonnet" "$has_default_haiku" "$has_small_fast_model" "$has_disable_flag"
+                    _claude-switch_model_update "$models_file" "$provider_name" "$name" "$model_value" "$description" "$default_opus" "$default_sonnet" "$default_haiku" "$small_fast_model" "$disable_flag" "$has_model" "$has_description" "$has_default_opus" "$has_default_sonnet" "$has_default_haiku" "$has_small_fast_model" "$has_disable_flag"
                     return $status
 
                 case disable
                     if test (count $argv) -lt 4
-                        echo "Error: 'model disable' requires provider and model name" >&2
-                        echo "Usage: claude-switch model disable <provider> <model>" >&2
+                        echo "Error: 'model disable' requires provider and name" >&2
+                        echo "Usage: claude-switch model disable <provider> <name>" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
-                    set -l model_name "$argv[4]"
-                    _claude-switch_model_disable "$models_file" "$provider_name" "$model_name"
+                    set -l name "$argv[4]"
+                    _claude-switch_model_disable "$models_file" "$provider_name" "$name"
                     return $status
 
                 case enable
                     if test (count $argv) -lt 4
-                        echo "Error: 'model enable' requires provider and model name" >&2
-                        echo "Usage: claude-switch model enable <provider> <model>" >&2
+                        echo "Error: 'model enable' requires provider and name" >&2
+                        echo "Usage: claude-switch model enable <provider> <name>" >&2
                         return 1
                     end
                     set -l provider_name "$argv[3]"
-                    set -l model_name "$argv[4]"
-                    _claude-switch_model_enable "$models_file" "$provider_name" "$model_name"
+                    set -l name "$argv[4]"
+                    _claude-switch_model_enable "$models_file" "$provider_name" "$name"
                     return $status
 
                 case '*'
@@ -761,7 +777,7 @@ function _claude-switch_provider_enable -a models_file provider_name
 end
 
 # Model CRUD functions
-function _claude-switch_model_add -a models_file provider_name model_name description default_opus default_sonnet default_haiku small_fast_model disable_flag has_description has_default_opus has_default_sonnet has_default_haiku has_small_fast_model has_disable_flag
+function _claude-switch_model_add -a models_file provider_name name model_value description default_opus default_sonnet default_haiku small_fast_model disable_flag has_model has_description has_default_opus has_default_sonnet has_default_haiku has_small_fast_model has_disable_flag
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -769,11 +785,21 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
         return 1
     end
 
-    # Check if model already exists
-    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    # Check if model already exists (by name)
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .name" "$models_file" 2>/dev/null)
     if test -n "$model_exists"
-        echo "Error: Model '$model_name' already exists in provider '$provider_name'" >&2
+        echo "Error: Model '$name' already exists in provider '$provider_name'" >&2
         return 1
+    end
+
+    # Interactive mode if model is missing (not provided via command line)
+    if test "$has_model" -eq 0
+        set model_value (_claude-switch_prompt_optional "Enter model (ANTHROPIC_MODEL value, defaults to name)")
+        if test $status -eq 130
+            echo "" >&2
+            echo "Cancelled." >&2
+            return 130
+        end
     end
 
     # Interactive mode if description is missing (not provided via command line)
@@ -833,7 +859,10 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     end
 
     # Build model object using jq with --arg
-    set -l jq_args --arg model "$model_name"
+    set -l jq_args --arg name "$name"
+    if test -n "$model_value"
+        set jq_args $jq_args --arg model "$model_value"
+    end
     if test -n "$description"
         set jq_args $jq_args --arg desc "$description"
     end
@@ -854,7 +883,10 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     end
 
     # Build the model object JSON
-    set -l model_obj_expr '{model: $model'
+    set -l model_obj_expr '{name: $name'
+    if test -n "$model_value"
+        set model_obj_expr "$model_obj_expr, model: \$model"
+    end
     if test -n "$description"
         set model_obj_expr "$model_obj_expr, description: \$desc"
     end
@@ -885,7 +917,7 @@ function _claude-switch_model_add -a models_file provider_name model_name descri
     $jq_cmd > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
 
     if test $status -eq 0
-        echo "✓ Added model '$model_name' to provider '$provider_name'"
+        echo "✓ Added model '$name' to provider '$provider_name'"
         return 0
     else
         echo "Error: Failed to add model" >&2
@@ -912,7 +944,7 @@ function _claude-switch_model_list -a models_file provider_name show_all
         end
 
         set -l model_count 0
-        set -l models (jq -r ".providers.\"$provider_name\".models[] | \"\\(.model)|\\(.description // \"\")|\\(.disabled // false)\"" "$models_file")
+        set -l models (jq -r ".providers.\"$provider_name\".models[] | \"\\(.name)|\\(.description // \"\")|\\(.disabled // false)\"" "$models_file")
         for model in $models
             set -l parts (string split '|' "$model")
             set -l model_name "$parts[1]"
@@ -945,7 +977,7 @@ function _claude-switch_model_list -a models_file provider_name show_all
     end
 end
 
-function _claude-switch_model_remove -a models_file current_file provider_name model_name
+function _claude-switch_model_remove -a models_file current_file provider_name name
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -953,18 +985,18 @@ function _claude-switch_model_remove -a models_file current_file provider_name m
         return 1
     end
 
-    # Check if model exists
-    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    # Check if model exists (by name)
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .name" "$models_file" 2>/dev/null)
     if test -z "$model_exists"
-        echo "Error: Model '$model_name' not found in provider '$provider_name'" >&2
+        echo "Error: Model '$name' not found in provider '$provider_name'" >&2
         return 1
     end
 
     # Check if this is the current model
     if test -f "$current_file"
         set -l current_provider (jq -r '.provider' "$current_file" 2>/dev/null)
-        set -l current_model (jq -r '.model' "$current_file" 2>/dev/null)
-        if test "$current_provider" = "$provider_name" -a "$current_model" = "$model_name"
+        set -l current_model (jq -r '.name' "$current_file" 2>/dev/null)
+        if test "$current_provider" = "$provider_name" -a "$current_model" = "$name"
             echo "Warning: This model is currently active." >&2
             read -P "Are you sure you want to delete it? (y/N): " confirm
             if test $status -ne 0
@@ -979,11 +1011,11 @@ function _claude-switch_model_remove -a models_file current_file provider_name m
         end
     end
 
-    # Remove model
-    jq ".providers.\"$provider_name\".models |= map(select(.model != \"$model_name\"))" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+    # Remove model by name
+    jq ".providers.\"$provider_name\".models |= map(select(.name != \"$name\"))" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
 
     if test $status -eq 0
-        echo "✓ Removed model '$model_name' from provider '$provider_name'"
+        echo "✓ Removed model '$name' from provider '$provider_name'"
         return 0
     else
         echo "Error: Failed to remove model" >&2
@@ -991,7 +1023,7 @@ function _claude-switch_model_remove -a models_file current_file provider_name m
     end
 end
 
-function _claude-switch_model_update -a models_file provider_name model_name description default_opus default_sonnet default_haiku small_fast_model disable_flag has_description has_default_opus has_default_sonnet has_default_haiku has_small_fast_model has_disable_flag
+function _claude-switch_model_update -a models_file provider_name name model_value description default_opus default_sonnet default_haiku small_fast_model disable_flag has_model has_description has_default_opus has_default_sonnet has_default_haiku has_small_fast_model has_disable_flag
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -999,15 +1031,16 @@ function _claude-switch_model_update -a models_file provider_name model_name des
         return 1
     end
 
-    # Check if model exists
-    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    # Check if model exists (by name)
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .name" "$models_file" 2>/dev/null)
     if test -z "$model_exists"
-        echo "Error: Model '$model_name' not found in provider '$provider_name'" >&2
+        echo "Error: Model '$name' not found in provider '$provider_name'" >&2
         return 1
     end
 
     # Get current model data for default values
-    set -l current_model (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\")" "$models_file")
+    set -l current_model (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\")" "$models_file")
+    set -l current_model_value (echo "$current_model" | jq -r '.model // ""')
     set -l current_description (echo "$current_model" | jq -r '.description // ""')
     set -l current_default_opus (echo "$current_model" | jq -r '.default_opus_model // ""')
     set -l current_default_sonnet (echo "$current_model" | jq -r '.default_sonnet_model // ""')
@@ -1016,6 +1049,7 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     set -l current_disable_flag (echo "$current_model" | jq -r '.disable_flag // ""')
 
     # Track which fields should be updated (1 = update, 0 = keep current)
+    set -l update_model 0
     set -l update_description 0
     set -l update_default_opus 0
     set -l update_default_sonnet 0
@@ -1024,6 +1058,24 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     set -l update_disable_flag 0
 
     # Interactive mode if parameters are missing (use current values as defaults)
+    if test "$has_model" -eq 0
+        # Interactive mode: prompt with current value as default
+        set model_value (_claude-switch_prompt_string "Enter model (ANTHROPIC_MODEL value)" "$current_model_value")
+        if test $status -eq 130
+            echo "" >&2
+            echo "Cancelled." >&2
+            return 130
+        end
+        if test "$model_value" != "$current_model_value"
+            set update_model 1
+        else
+            set update_model 0
+        end
+    else
+        # Parameter was provided via command line, always update
+        set update_model 1
+    end
+
     if test "$has_description" -eq 0
         # Interactive mode: prompt with current value as default
         set description (_claude-switch_prompt_string "Enter description" "$current_description")
@@ -1126,9 +1178,13 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     end
 
     # Build update object using jq with --arg (only update fields that were changed)
-    set -l jq_args --arg model "$model_name"
-    set -l update_expr ".providers.\"$provider_name\".models |= map(if .model == \$model then ."
+    set -l jq_args --arg name "$name"
+    set -l update_expr ".providers.\"$provider_name\".models |= map(if .name == \$name then ."
 
+    if test $update_model -eq 1
+        set jq_args $jq_args --arg model "$model_value"
+        set update_expr "$update_expr + {model: \$model}"
+    end
     if test $update_description -eq 1
         set jq_args $jq_args --arg desc "$description"
         set update_expr "$update_expr + {description: \$desc}"
@@ -1166,7 +1222,7 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     $jq_cmd > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
 
     if test $status -eq 0
-        echo "✓ Updated model '$model_name' in provider '$provider_name'"
+        echo "✓ Updated model '$name' in provider '$provider_name'"
         return 0
     else
         echo "Error: Failed to update model" >&2
@@ -1174,7 +1230,7 @@ function _claude-switch_model_update -a models_file provider_name model_name des
     end
 end
 
-function _claude-switch_model_disable -a models_file provider_name model_name
+function _claude-switch_model_disable -a models_file provider_name name
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -1182,25 +1238,25 @@ function _claude-switch_model_disable -a models_file provider_name model_name
         return 1
     end
 
-    # Check if model exists
-    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    # Check if model exists (by name)
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .name" "$models_file" 2>/dev/null)
     if test -z "$model_exists"
-        echo "Error: Model '$model_name' not found in provider '$provider_name'" >&2
+        echo "Error: Model '$name' not found in provider '$provider_name'" >&2
         return 1
     end
 
     # Check if already disabled
-    set -l disabled (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .disabled // false" "$models_file")
+    set -l disabled (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .disabled // false" "$models_file")
     if test "$disabled" = "true"
-        echo "Model '$model_name' in provider '$provider_name' is already disabled"
+        echo "Model '$name' in provider '$provider_name' is already disabled"
         return 0
     end
 
-    # Disable model
-    jq ".providers.\"$provider_name\".models |= map(if .model == \"$model_name\" then . + {disabled: true} else . end)" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+    # Disable model by name
+    jq ".providers.\"$provider_name\".models |= map(if .name == \"$name\" then . + {disabled: true} else . end)" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
 
     if test $status -eq 0
-        echo "✓ Disabled model '$model_name' in provider '$provider_name'"
+        echo "✓ Disabled model '$name' in provider '$provider_name'"
         return 0
     else
         echo "Error: Failed to disable model" >&2
@@ -1208,7 +1264,7 @@ function _claude-switch_model_disable -a models_file provider_name model_name
     end
 end
 
-function _claude-switch_model_enable -a models_file provider_name model_name
+function _claude-switch_model_enable -a models_file provider_name name
     # Check if provider exists
     set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
     if test "$exists" != "true"
@@ -1216,25 +1272,25 @@ function _claude-switch_model_enable -a models_file provider_name model_name
         return 1
     end
 
-    # Check if model exists
-    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .model" "$models_file" 2>/dev/null)
+    # Check if model exists (by name)
+    set -l model_exists (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .name" "$models_file" 2>/dev/null)
     if test -z "$model_exists"
-        echo "Error: Model '$model_name' not found in provider '$provider_name'" >&2
+        echo "Error: Model '$name' not found in provider '$provider_name'" >&2
         return 1
     end
 
     # Check if already enabled
-    set -l disabled (jq -r ".providers.\"$provider_name\".models[] | select(.model == \"$model_name\") | .disabled // false" "$models_file")
+    set -l disabled (jq -r ".providers.\"$provider_name\".models[] | select(.name == \"$name\") | .disabled // false" "$models_file")
     if test "$disabled" != "true"
-        echo "Model '$model_name' in provider '$provider_name' is already enabled"
+        echo "Model '$name' in provider '$provider_name' is already enabled"
         return 0
     end
 
-    # Enable model
-    jq ".providers.\"$provider_name\".models |= map(if .model == \"$model_name\" then . + {disabled: false} else . end)" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
+    # Enable model by name
+    jq ".providers.\"$provider_name\".models |= map(if .name == \"$name\" then . + {disabled: false} else . end)" "$models_file" > "$models_file.tmp" && mv "$models_file.tmp" "$models_file"
 
     if test $status -eq 0
-        echo "✓ Enabled model '$model_name' in provider '$provider_name'"
+        echo "✓ Enabled model '$name' in provider '$provider_name'"
         return 0
     else
         echo "Error: Failed to enable model" >&2
@@ -1307,7 +1363,7 @@ function _claude-switch_list_models -a models_file show_all
         echo "  Models:"
 
         set -l model_count 0
-        set -l models (jq -r ".providers.\"$provider\".models[] | \"\\(.model)|\\(.description)|\\(.disabled // false)\"" "$models_file")
+        set -l models (jq -r ".providers.\"$provider\".models[] | \"\\(.name)|\\(.description)|\\(.disabled // false)\"" "$models_file")
         for model in $models
             set -l parts (string split '|' "$model")
             set -l model_name "$parts[1]"
@@ -1361,12 +1417,12 @@ function _claude-switch_export_env -a current_file models_file
         return 1
     end
 
-    # Get current provider and model
+    # Get current provider and name
     set -l provider (jq -r '.provider' "$current_file" 2>/dev/null)
-    set -l model_name (jq -r '.model' "$current_file" 2>/dev/null)
+    set -l name (jq -r '.name' "$current_file" 2>/dev/null)
 
     # If current.json is empty or missing required fields, return silently
-    if test -z "$provider" -o -z "$model_name" -o "$provider" = null -o "$model_name" = null
+    if test -z "$provider" -o -z "$name" -o "$provider" = null -o "$name" = null
         return 0
     end
 
@@ -1389,17 +1445,21 @@ function _claude-switch_export_env -a current_file models_file
         return 1
     end
 
-    # Get model details
-    set -l model_info (echo "$provider_data" | jq -r ".models[] | select(.model == \"$model_name\")")
+    # Get model details by name
+    set -l model_info (echo "$provider_data" | jq -r ".models[] | select(.name == \"$name\")")
     if test -z "$model_info" -o "$model_info" = null
-        echo "Error: Model '$model_name' not found in provider '$provider'" >&2
+        echo "Error: Model '$name' not found in provider '$provider'" >&2
         return 1
     end
 
     # Extract values
     set -l auth_token (echo "$provider_data" | jq -r '.auth_token')
     set -l base_url (echo "$provider_data" | jq -r '.base_url')
-    set -l model (echo "$model_info" | jq -r '.model')
+    # Use 'model' field if set, otherwise use 'name'
+    set -l model_value (echo "$model_info" | jq -r '.model // ""')
+    if test -z "$model_value"
+        set model_value "$name"
+    end
     set -l default_haiku (echo "$model_info" | jq -r '.default_haiku_model // ""')
     set -l default_opus (echo "$model_info" | jq -r '.default_opus_model // ""')
     set -l default_sonnet (echo "$model_info" | jq -r '.default_sonnet_model // ""')
@@ -1412,7 +1472,7 @@ function _claude-switch_export_env -a current_file models_file
     # Set environment variables
     set -gx ANTHROPIC_AUTH_TOKEN "$auth_token"
     set -gx ANTHROPIC_BASE_URL "$base_url"
-    set -gx ANTHROPIC_MODEL "$model"
+    set -gx ANTHROPIC_MODEL "$model_value"
     if test -n "$default_haiku"
         set -gx ANTHROPIC_DEFAULT_HAIKU_MODEL "$default_haiku"
     end
@@ -1429,7 +1489,7 @@ function _claude-switch_export_env -a current_file models_file
         set -gx ANTHROPIC_DISABLE_FLAG "$disable_flag"
     end
 
-    echo "✓ Loaded model: $provider/$model_name"
+    echo "✓ Loaded model: $provider/$name"
 end
 
 function _claude-switch_show_current
@@ -1443,26 +1503,31 @@ function _claude-switch_show_current
     if not test -f "$current_file"
         echo "  No model is currently set. It will use the official model."
         echo ""
-        echo "To set a model, run: claude-switch switch <provider>/<model>"
+        echo "To set a model, run: claude-switch switch <provider>/<name>"
         echo "To list available models, run: claude-switch model list"
         return 0
     end
 
-    # Read current provider and model
+    # Read current provider and name
     set -l provider (jq -r '.provider' "$current_file" 2>/dev/null)
-    set -l model_name (jq -r '.model' "$current_file" 2>/dev/null)
+    set -l name (jq -r '.name' "$current_file" 2>/dev/null)
 
-    if test -z "$provider" -o -z "$model_name"
+    if test -z "$provider" -o -z "$name"
         echo "  Invalid current.json file"
         return 1
     end
 
     echo "  Provider: $provider"
-    echo "  Model: $model_name"
+    echo "  Name: $name"
 
     # Get full details from models.json if available
     if test -f "$models_file"
-        set -l description (jq -r ".providers.\"$provider\".models[] | select(.model == \"$model_name\") | .description" "$models_file" 2>/dev/null)
+        set -l model_value (jq -r ".providers.\"$provider\".models[] | select(.name == \"$name\") | .model // \"\"" "$models_file" 2>/dev/null)
+        if test -n "$model_value" -a "$model_value" != null -a "$model_value" != ""
+            echo "  Model: $model_value"
+        end
+
+        set -l description (jq -r ".providers.\"$provider\".models[] | select(.name == \"$name\") | .description" "$models_file" 2>/dev/null)
         if test -n "$description" -a "$description" != null
             echo "  Description: $description"
         end
@@ -1476,7 +1541,7 @@ function _claude-switch_show_current
     echo ""
 end
 
-function _claude-switch_set_model -a models_file current_file provider model
+function _claude-switch_set_model -a models_file current_file provider name
     # Check if provider exists
     set -l provider_exists (jq -r ".providers | has(\"$provider\")" "$models_file" 2>/dev/null)
     if test "$provider_exists" != "true"
@@ -1501,22 +1566,22 @@ function _claude-switch_set_model -a models_file current_file provider model
         return 1
     end
 
-    # Get model details
-    set -l model_info (echo "$provider_data" | jq -r ".models[] | select(.model == \"$model\")")
+    # Get model details by name
+    set -l model_info (echo "$provider_data" | jq -r ".models[] | select(.name == \"$name\")")
     if test -z "$model_info" -o "$model_info" = null
-        echo "✗ Failed: Model '$model' not found in provider '$provider'." >&2
+        echo "✗ Failed: Model '$name' not found in provider '$provider'." >&2
         echo "" >&2
         echo "Available models in '$provider':" >&2
-        echo "$provider_data" | jq -r '.models[] | "  - \(.model): \(.description // "No description")"' 2>/dev/null
+        echo "$provider_data" | jq -r '.models[] | "  - \(.name): \(.description // "No description")"' 2>/dev/null
         return 1
     end
 
     # Check if model is disabled
     set -l model_disabled (echo "$model_info" | jq -r '.disabled // false')
     if test "$model_disabled" = "true"
-        echo "✗ Failed: Model '$model' in provider '$provider' is disabled." >&2
+        echo "✗ Failed: Model '$name' in provider '$provider' is disabled." >&2
         echo "" >&2
-        echo "To enable, run: claude-switch model enable $provider $model" >&2
+        echo "To enable, run: claude-switch model enable $provider $name" >&2
         return 1
     end
 
@@ -1526,7 +1591,7 @@ function _claude-switch_set_model -a models_file current_file provider model
 
     # Get model-level details
     set -l description (echo "$model_info" | jq -r '.description')
-    set -l model_value (echo "$model_info" | jq -r '.model')
+    set -l model_value (echo "$model_info" | jq -r '.model // ""')
     set -l default_haiku (echo "$model_info" | jq -r '.default_haiku_model // ""')
     set -l default_opus (echo "$model_info" | jq -r '.default_opus_model // ""')
     set -l default_sonnet (echo "$model_info" | jq -r '.default_sonnet_model // ""')
@@ -1537,13 +1602,16 @@ function _claude-switch_set_model -a models_file current_file provider model
         mkdir -p "$config_dir"
     end
 
-    # Write provider and model to current.json (store the model identifier, not the full model value)
-    echo "{\"provider\": \"$provider\", \"model\": \"$model\"}" >"$current_file"
+    # Write provider and name to current.json (store the name identifier, not the model value)
+    echo "{\"provider\": \"$provider\", \"name\": \"$name\"}" >"$current_file"
 
     # Display success message
-    echo "✓ Success: Switched to '$provider/$model'"
+    echo "✓ Success: Switched to '$provider/$name'"
     echo "  Provider: $provider"
-    echo "  Model: $model"
+    echo "  Name: $name"
+    if test -n "$model_value"
+        echo "  Model: $model_value"
+    end
     echo "  Description: $description"
     echo ""
     echo "  Config saved to: $current_file"
@@ -1565,7 +1633,7 @@ function _claude-switch_clear -a current_file
 
     echo ""
     echo "All ANTHROPIC environment variables have been cleared."
-    echo "You can set a new model with: claude-switch switch <provider>/<model>"
+    echo "You can set a new model with: claude-switch switch <provider>/<name>"
 end
 
 function _claude-switch_help
@@ -1574,7 +1642,7 @@ Usage: claude-switch [subcommand] [options]
 
 Main Subcommands:
   edit                    Edit the configuration file
-  switch <provider/model> Switch to a model
+  switch <provider/name>  Switch to a model
   clear                   Clear current model configuration
   export                  Export environment variables from current model
   unexport                Unload all ANTHROPIC environment variables
@@ -1608,14 +1676,14 @@ end
 function _claude-switch_help_switch
     printf 'claude-switch switch: Switch to a model
 
-Usage: claude-switch switch <provider/model>
+Usage: claude-switch switch <provider/name>
 
 Description:
   Switch to a specific model from a provider. The model must be specified
-  in the format "provider/model" (e.g., "Xiaomi/mimo-v2-flash").
+  in the format "provider/name" (e.g., "Xiaomi/mimo-v2-flash").
 
 Arguments:
-  <provider/model>        Provider name and model name separated by "/"
+  <provider/name>        Provider name and model name separated by "/"
 
 Examples:
   claude-switch switch Xiaomi/mimo-v2-flash
@@ -1666,7 +1734,7 @@ What it does:
   - Unloads all ANTHROPIC_* environment variables
 
 After clearing, you can set a new model with:
-  claude-switch switch <provider/model>
+  claude-switch switch <provider/name>
 '
 end
 
@@ -1769,33 +1837,35 @@ function _claude-switch_help_model
 Usage: claude-switch model <subcommand> [options]
 
 Subcommands:
-  add <provider> <model> [--description <desc>] [--default-opus <model>]
+  add <provider> <name> [--model <model>] [--description <desc>] [--default-opus <model>]
         [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]
-    Add a new model to a provider. If description or other optional fields
-    are omitted, you will be prompted interactively.
+    Add a new model to a provider. The name is the identifier for the model.
+    If --model is not provided, name will be used as ANTHROPIC_MODEL value.
+    If description or other optional fields are omitted, you will be prompted interactively.
 
   list [provider] [--all]
     List models. If provider is specified, lists only that provider'\''s models.
     Use --all to include disabled models.
 
-  remove <provider> <model>
+  remove <provider> <name>
     Remove a model from a provider. If the model is currently active,
     you will be prompted for confirmation.
 
-  update <provider> <model> [--description <desc>] [--default-opus <model>]
+  update <provider> <name> [--model <model>] [--description <desc>] [--default-opus <model>]
         [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]
     Update model settings. Only provided fields will be updated.
     Omitted fields keep their current values.
 
-  disable <provider> <model>
+  disable <provider> <name>
     Disable a model. Disabled models are hidden from normal listings
     and cannot be switched to.
 
-  enable <provider> <model>
+  enable <provider> <name>
     Enable a previously disabled model.
 
 Examples:
   claude-switch model add MyProvider my-model --description "My Model"
+  claude-switch model add MyProvider my-alias --model "actual-model-id" --description "Alias"
   claude-switch model list
   claude-switch model list MyProvider
   claude-switch model list --all
