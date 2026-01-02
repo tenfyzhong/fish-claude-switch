@@ -794,7 +794,7 @@ function _claude-switch_model_add -a models_file provider_name name model_value 
 
     # Interactive mode if model is missing (not provided via command line)
     if test "$has_model" -eq 0
-        set model_value (_claude-switch_prompt_optional "Enter model (ANTHROPIC_MODEL value, defaults to name)")
+        set model_value (_claude-switch_prompt_optional "Enter model")
         if test $status -eq 130
             echo "" >&2
             echo "Cancelled." >&2
@@ -1060,7 +1060,7 @@ function _claude-switch_model_update -a models_file provider_name name model_val
     # Interactive mode if parameters are missing (use current values as defaults)
     if test "$has_model" -eq 0
         # Interactive mode: prompt with current value as default
-        set model_value (_claude-switch_prompt_string "Enter model (ANTHROPIC_MODEL value)" "$current_model_value")
+        set model_value (_claude-switch_prompt_string "Enter model" "$current_model_value")
         if test $status -eq 130
             echo "" >&2
             echo "Cancelled." >&2
@@ -1455,11 +1455,8 @@ function _claude-switch_export_env -a current_file models_file
     # Extract values
     set -l auth_token (echo "$provider_data" | jq -r '.auth_token')
     set -l base_url (echo "$provider_data" | jq -r '.base_url')
-    # Use 'model' field if set, otherwise use 'name'
+    # Use 'model' field directly, no fallback to name
     set -l model_value (echo "$model_info" | jq -r '.model // ""')
-    if test -z "$model_value"
-        set model_value "$name"
-    end
     set -l default_haiku (echo "$model_info" | jq -r '.default_haiku_model // ""')
     set -l default_opus (echo "$model_info" | jq -r '.default_opus_model // ""')
     set -l default_sonnet (echo "$model_info" | jq -r '.default_sonnet_model // ""')
@@ -1472,7 +1469,9 @@ function _claude-switch_export_env -a current_file models_file
     # Set environment variables
     set -gx ANTHROPIC_AUTH_TOKEN "$auth_token"
     set -gx ANTHROPIC_BASE_URL "$base_url"
-    set -gx ANTHROPIC_MODEL "$model_value"
+    if test -n "$model_value"
+        set -gx ANTHROPIC_MODEL "$model_value"
+    end
     if test -n "$default_haiku"
         set -gx ANTHROPIC_DEFAULT_HAIKU_MODEL "$default_haiku"
     end
@@ -1840,7 +1839,7 @@ Subcommands:
   add <provider> <name> [--model <model>] [--description <desc>] [--default-opus <model>]
         [--default-sonnet <model>] [--default-haiku <model>] [--small-fast-model <model>]
     Add a new model to a provider. The name is the identifier for the model.
-    If --model is not provided, name will be used as ANTHROPIC_MODEL value.
+    If --model is not provided, ANTHROPIC_MODEL will not be set during export.
     If description or other optional fields are omitted, you will be prompted interactively.
 
   list [provider] [--all]

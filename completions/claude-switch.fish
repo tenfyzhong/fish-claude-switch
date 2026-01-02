@@ -104,7 +104,7 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 # Model add
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -n '__fish_is_nth_token 4' -x -d "Name"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l model -d "Model (ANTHROPIC_MODEL value)"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l model -d "Model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l description -d "Model description"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from add' -l default-sonnet -d "Default sonnet model"
@@ -130,7 +130,7 @@ complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen
 # Model update
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Name"
-complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l model -d "Model (ANTHROPIC_MODEL value)"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l model -d "Model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l description -d "Model description"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-opus -d "Default opus model"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from update' -l default-sonnet -d "Default sonnet model"
