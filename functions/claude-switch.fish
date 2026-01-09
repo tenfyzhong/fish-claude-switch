@@ -849,15 +849,6 @@ function _claude-switch_model_add -a models_file provider_name name model_value 
         end
     end
 
-    if test "$has_disable_flag" -eq 0
-        set disable_flag (_claude-switch_prompt_optional "Enter disable flag")
-        if test $status -eq 130
-            echo "" >&2
-            echo "Cancelled." >&2
-            return 130
-        end
-    end
-
     # Build model object using jq with --arg
     set -l jq_args --arg name "$name"
     if test -n "$model_value"
