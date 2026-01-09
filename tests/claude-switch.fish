@@ -272,6 +272,8 @@ Available models in 'TestProvider':
 
 @test "claude-switch model add adds model with args" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model --description "New Model" --model "" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" >/dev/null 2>&1; jq -r '.providers.TestProvider.models[] | select(.name == "new-model") | .description' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = "New Model"
 
+@test "claude-switch model add skips disable flag prompt" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider new-model-no-disable --description "New Model" --model "" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" >/dev/null 2>&1; jq -r ' .providers.TestProvider.models[] | select(.name == "new-model-no-disable") | has("disable_flag") ' "$HOME/.config/claude/claude-switch/models.json" 2>/dev/null; _test_cleanup_env) = false
+
 @test "claude-switch model add fails if model exists" (_test_setup_env; _test_create_mock_config; claude-switch model add TestProvider test-model-v1 --description "Test" --model "" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" 2>&1 | string collect; _test_cleanup_env) = "Error: Model 'test-model-v1' already exists in provider 'TestProvider'"
 
 @test "claude-switch model add fails if provider not found" (_test_setup_env; _test_create_mock_config; claude-switch model add NonExistent model --description "Test" --model "" --default-opus "" --default-sonnet "" --default-haiku "" --small-fast-model "" --disable-flag "" 2>&1 | string collect; _test_cleanup_env) = "Error: Provider 'NonExistent' not found"

@@ -119,13 +119,15 @@ claude-switch provider enable <name>      # Enable a disabled provider
 ### Model Management
 
 ```bash
-claude-switch model add <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+claude-switch model add <provider> <model> [--model <model>] [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>] [--disable-flag <flag>]
 claude-switch model list [provider] [--all]  # Use --all to show disabled models
 claude-switch model remove <provider> <model>
-claude-switch model update <provider> <model> [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>]
+claude-switch model update <provider> <model> [--model <model>] [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>] [--disable-flag <flag>]
 claude-switch model disable <provider> <model>   # Disable a model
 claude-switch model enable <provider> <model>    # Enable a disabled model
 ```
+
+Note: `--disable-flag` is only set when provided; `model add` does not prompt for it (defaults to enabled).
 
 ## Configuration
 
