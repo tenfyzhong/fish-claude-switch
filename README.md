@@ -121,6 +121,7 @@ claude-switch provider enable <name>      # Enable a disabled provider
 ```bash
 claude-switch model add <provider> <model> [--model <model>] [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>] [--disable-flag <flag>]
 claude-switch model list [provider] [--all]  # Use --all to show disabled models
+claude-switch model show <provider> <model>  # Show detailed model configuration
 claude-switch model remove <provider> <model>
 claude-switch model update <provider> <model> [--model <model>] [--description <desc>] [--default-haiku <model>] [--default-opus <model>] [--default-sonnet <model>] [--small-fast-model <model>] [--disable-flag <flag>]
 claude-switch model disable <provider> <model>   # Disable a model
@@ -209,6 +210,9 @@ claude-switch model add Official claude-3-5-sonnet-20241022 \
 claude-switch model add Xiaomi mimo-v2-flash \
   --description "Xiaomi Mimo V2 Flash"
 
+# View detailed model configuration
+claude-switch model show Xiaomi mimo-v2-flash
+
 # Switch between them
 claude-switch switch Official/claude-3-5-sonnet-20241022
 claude-switch switch Xiaomi/mimo-v2-flash
@@ -275,6 +279,42 @@ claude-switch model enable Xiaomi mimo-v2-flash
 claude-switch switch Xiaomi/mimo-v2-flash
 # Error: Provider 'Xiaomi' is disabled.
 # To enable, run: claude-switch provider enable Xiaomi
+```
+
+### Example 5: Viewing Model Details
+
+You can view detailed configuration for any model using the `model show` command:
+
+```bash
+# View detailed model configuration
+claude-switch model show Xiaomi mimo-v2-flash
+
+# Example output:
+# Model Details: Xiaomi/mimo-v2-flash
+#
+# Provider Information:
+#   Provider: Xiaomi
+#   Base URL: https://api.xiaomimimo.com/anthropic
+#   Auth Token: [hidden for security]
+#
+# Model Configuration:
+#   Name: mimo-v2-flash
+#   Model: mimo-v2-flash
+#   Description: Xiaomi Mimo V2 Flash
+#
+# Default Model Mappings:
+#   Default Opus Model: mimo-v2-flash
+#   Default Sonnet Model: mimo-v2-flash
+#   Default Haiku Model: mimo-v2-flash
+#   Small Fast Model: mimo-v2-flash
+#
+# Additional Settings:
+#   Disable Flag: Not set
+
+# Works with disabled models too (shows [DISABLED] indicator)
+claude-switch model disable Xiaomi mimo-v2-flash
+claude-switch model show Xiaomi mimo-v2-flash
+# Shows: Name: mimo-v2-flash [DISABLED]
 ```
 
 ## Testing
