@@ -506,9 +506,27 @@ function claude-switch --description 'Switch between different Claude code provi
                     _claude-switch_model_enable "$models_file" "$provider_name" "$name"
                     return $status
 
+                case show
+                    # Check for help flag
+                    if test (count $argv) -ge 3
+                        if test "$argv[3]" = "-h"; or test "$argv[3]" = "--help"
+                            _claude-switch_help_model_show
+                            return 0
+                        end
+                    end
+                    if test (count $argv) -lt 4
+                        echo "Error: 'model show' requires provider and name" >&2
+                        echo "Usage: claude-switch model show <provider> <name>" >&2
+                        return 1
+                    end
+                    set -l provider_name "$argv[3]"
+                    set -l name "$argv[4]"
+                    _claude-switch_model_show "$models_file" "$provider_name" "$name"
+                    return $status
+
                 case '*'
                     echo "Error: Unknown model subcommand '$model_cmd'" >&2
-                    echo "Available subcommands: add, list, remove, update, disable, enable" >&2
+                    echo "Available subcommands: add, list, remove, update, disable, enable, show" >&2
                     return 1
             end
 
@@ -1289,6 +1307,103 @@ function _claude-switch_model_enable -a models_file provider_name name
     end
 end
 
+function _claude-switch_model_show -a models_file provider_name name
+    # Check if provider exists
+    set -l exists (jq -r ".providers | has(\"$provider_name\")" "$models_file" 2>/dev/null)
+    if test "$exists" != "true"
+        echo "Error: Provider '$provider_name' not found" >&2
+        return 1
+    end
+
+    # Get provider data
+    set -l provider_data (jq -r ".providers.\"$provider_name\"" "$models_file" 2>/dev/null)
+    if test -z "$provider_data" -o "$provider_data" = "null"
+        echo "Error: Provider '$provider_name' not found" >&2
+        return 1
+    end
+
+    # Check if model exists (by name)
+    set -l model_info (echo "$provider_data" | jq -r ".models[] | select(.name == \"$name\")")
+    if test -z "$model_info" -o "$model_info" = "null"
+        echo "Error: Model '$name' not found in provider '$provider_name'" >&2
+        return 1
+    end
+
+    # Get provider details
+    set -l base_url (echo "$provider_data" | jq -r '.base_url')
+    set -l provider_disabled (echo "$provider_data" | jq -r '.disabled // false')
+
+    # Get model details
+    set -l model_value (echo "$model_info" | jq -r '.model // ""')
+    set -l description (echo "$model_info" | jq -r '.description // ""')
+    set -l default_opus (echo "$model_info" | jq -r '.default_opus_model // ""')
+    set -l default_sonnet (echo "$model_info" | jq -r '.default_sonnet_model // ""')
+    set -l default_haiku (echo "$model_info" | jq -r '.default_haiku_model // ""')
+    set -l small_fast_model (echo "$model_info" | jq -r '.small_fast_model // ""')
+    set -l disable_flag (echo "$model_info" | jq -r '.disable_flag // ""')
+    set -l model_disabled (echo "$model_info" | jq -r '.disabled // false')
+
+    # Display model details
+    echo "Model Details: $provider_name/$name"
+    echo ""
+    echo "Provider Information:"
+    set -l provider_status ""
+    if test "$provider_disabled" = "true"
+        set provider_status " [DISABLED]"
+    end
+    echo "  Provider: $provider_name$provider_status"
+    echo "  Base URL: $base_url"
+    echo "  Auth Token: [hidden for security]"
+    echo ""
+    echo "Model Configuration:"
+    set -l model_status ""
+    if test "$model_disabled" = "true"
+        set model_status " [DISABLED]"
+    end
+    echo "  Name: $name$model_status"
+    if test -n "$model_value"
+        echo "  Model: $model_value"
+    else
+        echo "  Model: Not set"
+    end
+    if test -n "$description"
+        echo "  Description: $description"
+    else
+        echo "  Description: No description"
+    end
+    echo ""
+    echo "Default Model Mappings:"
+    if test -n "$default_opus"
+        echo "  Default Opus Model: $default_opus"
+    else
+        echo "  Default Opus Model: Not set"
+    end
+    if test -n "$default_sonnet"
+        echo "  Default Sonnet Model: $default_sonnet"
+    else
+        echo "  Default Sonnet Model: Not set"
+    end
+    if test -n "$default_haiku"
+        echo "  Default Haiku Model: $default_haiku"
+    else
+        echo "  Default Haiku Model: Not set"
+    end
+    if test -n "$small_fast_model"
+        echo "  Small Fast Model: $small_fast_model"
+    else
+        echo "  Small Fast Model: Not set"
+    end
+    echo ""
+    echo "Additional Settings:"
+    if test -n "$disable_flag"
+        echo "  Disable Flag: $disable_flag"
+    else
+        echo "  Disable Flag: Not set"
+    end
+
+    return 0
+end
+
 function _claude-switch_create_default_config -a models_file
     mkdir -p (dirname "$models_file")
     echo '{
@@ -1648,6 +1763,7 @@ Provider Management:
 Model Management:
   model add               Add a new model
   model list              List models
+  model show              Show detailed model configuration
   model remove            Remove a model
   model update            Update model settings
   model disable           Disable a model
@@ -1837,6 +1953,10 @@ Subcommands:
     List models. If provider is specified, lists only that provider'\''s models.
     Use --all to include disabled models.
 
+  show <provider> <name>
+    Show detailed configuration for a specific model, including all settings
+    and default model mappings. Works with disabled models.
+
   remove <provider> <name>
     Remove a model from a provider. If the model is currently active,
     you will be prompted for confirmation.
@@ -1859,6 +1979,7 @@ Examples:
   claude-switch model list
   claude-switch model list MyProvider
   claude-switch model list --all
+  claude-switch model show MyProvider my-model
   claude-switch model update MyProvider my-model --description "Updated Description"
   claude-switch model disable MyProvider my-model
   claude-switch model enable MyProvider my-model
@@ -1866,5 +1987,41 @@ Examples:
 
 Configuration:
   Models are stored in ~/.config/claude/claude-switch/models.json
+'
+end
+
+function _claude-switch_help_model_show
+    printf 'claude-switch model show: Show detailed model configuration
+
+Usage: claude-switch model show <provider> <name>
+
+Description:
+  Displays all configuration details for a specific model, including provider
+  information, model settings, and default model mappings.
+
+Arguments:
+  <provider>             Provider name
+  <name>                 Model name
+
+Information Displayed:
+  - Provider name and status (enabled/disabled)
+  - Provider base URL
+  - Model name and status (enabled/disabled)
+  - Model identifier (if set)
+  - Model description
+  - Default Opus model mapping
+  - Default Sonnet model mapping
+  - Default Haiku model mapping
+  - Small fast model mapping
+  - Disable flag (if set)
+
+Examples:
+  claude-switch model show Xiaomi mimo-v2-flash
+  claude-switch model show Official claude-3-5-sonnet-20241022
+
+Note:
+  - Auth tokens are hidden for security
+  - Works with disabled models and providers (shows [DISABLED] indicator)
+  - Use "claude-switch model list" to see available models
 '
 end

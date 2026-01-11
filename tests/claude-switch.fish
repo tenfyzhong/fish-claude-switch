@@ -90,6 +90,7 @@ Provider Management:
 Model Management:
   model add               Add a new model
   model list              List models
+  model show              Show detailed model configuration
   model remove            Remove a model
   model update            Update model settings
   model disable           Disable a model
@@ -124,6 +125,7 @@ Provider Management:
 Model Management:
   model add               Add a new model
   model list              List models
+  model show              Show detailed model configuration
   model remove            Remove a model
   model update            Update model settings
   model disable           Disable a model

@@ -81,17 +81,23 @@ complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_s
 complete -c claude-switch -n '__fish_seen_subcommand_from provider; and __fish_seen_subcommand_from update' -s h -l help -d "Show help for provider update"
 
 # Model subcommands
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a add -d "Add a new model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a list -d "List models"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a remove -d "Remove a model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a update -d "Update a model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a disable -d "Disable a model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -a enable -d "Enable a model"
-complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable' -s h -l help -d "Show help for model commands"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a add -d "Add a new model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a list -d "List models"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a show -d "Show model details"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a remove -d "Remove a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a update -d "Update a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a disable -d "Disable a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -a enable -d "Enable a model"
+complete -c claude-switch -n '__fish_seen_subcommand_from model' -n 'not __fish_seen_subcommand_from add list remove update disable enable show' -s h -l help -d "Show help for model commands"
 
 # Model list
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from list' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name (optional)"
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from list' -l all -d "Show all models including disabled"
+
+# Model show
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from show' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from show' -n '__fish_is_nth_token 4' -x -a "(_claude-switch_complete_models_for_provider (_claude-switch_get_provider_from_cmdline))" -d "Model name"
+complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from show' -s h -l help -d "Show help for model show"
 
 # Model disable
 complete -c claude-switch -n '__fish_seen_subcommand_from model; and __fish_seen_subcommand_from disable' -n '__fish_is_nth_token 3' -x -a "(_claude-switch_complete_providers)" -d "Provider name"
