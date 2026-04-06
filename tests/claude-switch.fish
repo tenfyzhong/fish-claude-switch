@@ -229,7 +229,15 @@ Available models in 'TestProvider':
 
 @test "claude-switch export sets default model vars" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export >/dev/null 2>&1; echo "$ANTHROPIC_DEFAULT_HAIKU_MODEL"; _test_cleanup_env) = test-haiku
 
-@test "claude-switch export shows success message" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export 2>&1 | string collect; _test_cleanup_env) = "✓ Loaded model: TestProvider/test-model-v1"
+@test "claude-switch export prints configured env vars to stdout" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch export 2>&1 | string collect; _test_cleanup_env) = "ANTHROPIC_AUTH_TOKEN=test-token-123
+ANTHROPIC_BASE_URL=https://test.example.com/anthropic
+ANTHROPIC_MODEL=test-model-v1
+ANTHROPIC_DEFAULT_HAIKU_MODEL=test-haiku
+ANTHROPIC_DEFAULT_OPUS_MODEL=test-opus
+ANTHROPIC_DEFAULT_SONNET_MODEL=test-sonnet
+ANTHROPIC_SMALL_FAST_MODEL=test-small-fast"
+
+@test "claude-switch export prints ANTHROPIC_DISABLE_FLAG when configured" (_test_setup_env; _test_create_mock_config; _test_create_current_config; claude-switch model update TestProvider test-model-v1 --description "Test Model Description" --model "test-model-v1" --default-opus "test-opus" --default-sonnet "test-sonnet" --default-haiku "test-haiku" --small-fast-model "test-small-fast" --disable-flag "disable-feature-x" >/dev/null 2>&1; claude-switch export 2>&1 | grep -c '^ANTHROPIC_DISABLE_FLAG=disable-feature-x$'; _test_cleanup_env) = 1
 
 @test "claude-switch export handles missing current.json" (_test_setup_env; _test_create_mock_config; claude-switch export 2>&1; echo "status:$status"; _test_cleanup_env) = "status:0"
 

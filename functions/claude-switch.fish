@@ -1510,6 +1510,17 @@ function _claude-switch_unexport_env
     echo "✓ Unloaded all ANTHROPIC environment variables"
 end
 
+function _claude-switch_print_env_var -a var_name
+    if not set -q $var_name
+        return 0
+    end
+
+    set -l var_value (string join " " $$var_name)
+    if test -n "$var_value"
+        printf '%s=%s\n' "$var_name" "$var_value"
+    end
+end
+
 function _claude-switch_export_env -a current_file models_file
     # Check if current.json exists and is not empty
     if not test -f "$current_file"
@@ -1594,7 +1605,14 @@ function _claude-switch_export_env -a current_file models_file
         set -gx ANTHROPIC_DISABLE_FLAG "$disable_flag"
     end
 
-    echo "✓ Loaded model: $provider/$name"
+    _claude-switch_print_env_var ANTHROPIC_AUTH_TOKEN
+    _claude-switch_print_env_var ANTHROPIC_BASE_URL
+    _claude-switch_print_env_var ANTHROPIC_MODEL
+    _claude-switch_print_env_var ANTHROPIC_DEFAULT_HAIKU_MODEL
+    _claude-switch_print_env_var ANTHROPIC_DEFAULT_OPUS_MODEL
+    _claude-switch_print_env_var ANTHROPIC_DEFAULT_SONNET_MODEL
+    _claude-switch_print_env_var ANTHROPIC_SMALL_FAST_MODEL
+    _claude-switch_print_env_var ANTHROPIC_DISABLE_FLAG
 end
 
 function _claude-switch_show_current
@@ -1852,7 +1870,8 @@ Usage: claude-switch export
 Description:
   Exports environment variables based on the currently selected model.
   These variables are set using "set -gx" and will be available in the
-  current shell session.
+  current shell session. Configured variables are also printed to stdout
+  as KEY=VALUE lines.
 
 Environment Variables Set:
   ANTHROPIC_AUTH_TOKEN              Authentication token from provider
@@ -1862,6 +1881,7 @@ Environment Variables Set:
   ANTHROPIC_DEFAULT_OPUS_MODEL       Optional: Default opus model
   ANTHROPIC_DEFAULT_SONNET_MODEL    Optional: Default sonnet model
   ANTHROPIC_SMALL_FAST_MODEL         Optional: Small fast model
+  ANTHROPIC_DISABLE_FLAG             Optional: Disable flag
 
 Note:
   - Requires a current model to be set (via "claude-switch switch")
@@ -1887,6 +1907,7 @@ Environment Variables Removed:
   ANTHROPIC_DEFAULT_OPUS_MODEL
   ANTHROPIC_DEFAULT_SONNET_MODEL
   ANTHROPIC_SMALL_FAST_MODEL
+  ANTHROPIC_DISABLE_FLAG
 
 Note:
   - This only affects the current shell session

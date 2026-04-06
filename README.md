@@ -99,7 +99,7 @@ claude-switch                    # Show current configuration
 claude-switch edit               # Edit configuration file
 claude-switch switch <provider/model>  # Switch to a model
 claude-switch clear              # Clear current configuration
-claude-switch export             # Export environment variables
+claude-switch export             # Export and print configured environment variables
 claude-switch unexport           # Unload environment variables
 claude-switch -h                # Show help message (or --help)
 claude-switch <subcommand> --help # Show detailed help for a subcommand
@@ -178,7 +178,7 @@ Configuration is stored in `~/.config/claude/claude-switch/`:
 
 ### Environment Variables
 
-When you run `claude-switch export`, the following environment variables are set:
+When you run `claude-switch export`, configured environment variables are set in your current shell and printed to stdout as `KEY=VALUE` lines:
 
 - `ANTHROPIC_AUTH_TOKEN` - API authentication token
 - `ANTHROPIC_BASE_URL` - API endpoint URL
@@ -187,6 +187,15 @@ When you run `claude-switch export`, the following environment variables are set
 - `ANTHROPIC_DEFAULT_OPUS_MODEL` - Default Opus model (optional)
 - `ANTHROPIC_DEFAULT_SONNET_MODEL` - Default Sonnet model (optional)
 - `ANTHROPIC_SMALL_FAST_MODEL` - Small fast model (optional)
+- `ANTHROPIC_DISABLE_FLAG` - Disable flag (optional)
+
+Example output:
+
+```text
+ANTHROPIC_AUTH_TOKEN=sk-ant-...
+ANTHROPIC_BASE_URL=https://api.example.com/anthropic
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+```
 
 ## Usage Examples
 
